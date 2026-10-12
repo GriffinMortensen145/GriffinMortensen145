@@ -12,6 +12,7 @@ You rule a small medieval settlement on a procedurally generated continent. Grow
 - **Diplomacy.** Alliances, peace, trade routes, gifts, and buying or selling resources. Allies expect you to join their wars.
 - **Battles.** Command battles in real time or auto-resolve them. Infantry beat cavalry, cavalry beat archers and siege, archers beat infantry, and siege engines break walls. Formations: line, wedge and block.
 - **The map.** Hand-shaded terrain with coastlines, forests and mountains, soft fog of war, a minimap, hover details, and warnings when enemy armies march on your cities.
+- **Roads and veterans.** Roads link your cities automatically and double army speed. Armies that win battles gain experience, up to elite (+30% strength).
 - **Research.** Four branches (agriculture, construction, military, economics) across three ages: Settlement, Expansion and Empire.
 - **Victory.** Conquer every rival realm. A realm falls when it loses its last city, and you lose if yours does. The Standings panel tracks who holds what.
 
@@ -23,6 +24,8 @@ You rule a small medieval settlement on a procedurally generated continent. Grow
 | Scroll | Zoom |
 | Click | Select a tile, city or army |
 | Right-click | Move the selected army, or attack an enemy city |
+| Shift-drag | Select several armies |
+| Right-click an enemy army | Pursue it |
 | Tab | Cycle through your armies |
 | Shift-click Train | Train five companies |
 | Minimap | Click or drag to jump |
