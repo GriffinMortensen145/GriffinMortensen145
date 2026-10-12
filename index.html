@@ -3,1059 +3,1504 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sounding</title>
+<title>Realmwright</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;800&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#d6e2df; --dim:#7f9692; --echo:#6ff2dc; --amber:#ffbf69; --blood:#e5484d;
-  --panel:#0b1214; --edge:#2d4a4f;
+  --ink:#ece4cf; --dim:#a9a28c; --panel:#18241d; --panel2:#213128; --edge:#3d5444; --brass:#d2a64a; --blood:#c8463c; --ok:#7fbf6a;
+  --serif:"Alegreya SC",Georgia,serif; --sans:"Alegreya Sans",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#000;color:var(--ink);overflow:hidden;
-  font-family:"Saira Semi Condensed",system-ui,sans-serif;font-size:16px;line-height:1.45}
-canvas{display:block;cursor:crosshair}
-.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);z-index:5;padding:24px}
-.ov.on{display:flex}
-.card{background:var(--panel);border:1px solid var(--edge);padding:28px 32px;width:100%;max-width:680px;max-height:100%;overflow:auto}
-h1,h2{margin:0;font-weight:800;line-height:.95}
-h2{font-size:34px;margin-bottom:10px}
-p{margin:0 0 12px;max-width:62ch}
+html,body{margin:0;height:100%;overflow:hidden;background:#0d1410;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.4}
+canvas{display:block;position:fixed;inset:0}
+button{font:inherit;font-weight:500;color:var(--ink);background:var(--panel2);border:1px solid var(--edge);padding:5px 10px;cursor:pointer;border-radius:3px}
+button:hover:not(:disabled){border-color:var(--brass)}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+button:disabled{opacity:.42;cursor:not-allowed}
+button.on{background:var(--brass);color:#1b1608;border-color:var(--brass)}
+button.primary{background:var(--brass);color:#1b1608;border-color:var(--brass);font-weight:700}
+button.danger{border-color:#7a3a33}
+h1,h2,h3{font-family:var(--serif);font-weight:800;margin:0;line-height:1.05}
+h2{font-size:26px;margin-bottom:8px}
+h3{font-size:18px;margin:14px 0 6px}
+p{margin:0 0 10px;max-width:64ch}
 .dim{color:var(--dim)}
-button{font:inherit;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--echo);padding:8px 18px;cursor:pointer}
-button:hover:not(:disabled){background:rgba(111,242,220,.12)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-button:disabled{border-color:#2a3a3c;color:#4d5f5e;cursor:not-allowed}
-button.primary{background:var(--echo);color:#001a16;border-color:var(--echo)}
-button.primary:hover{background:#9af7e8}
-input{font:inherit;color:var(--ink);background:#050a0b;border:1px solid var(--edge);padding:8px 10px;width:140px}
-.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-kbd{font:inherit;font-weight:600;display:inline-block;min-width:26px;text-align:center;padding:0 6px;border:1px solid var(--edge);border-bottom-width:2px;color:var(--amber)}
-.keys{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:16px 0}
-/* title */
-#title{background:#000}
-#title .card{background:transparent;border:0;text-align:left}
-.mark{position:relative;display:inline-block;margin:0 0 18px}
-.mark h1{font-size:clamp(64px,12vw,132px);color:var(--echo);letter-spacing:.01em;position:relative;z-index:1}
-.ring{position:absolute;left:-8px;top:50%;width:40px;height:40px;margin-top:-20px;border:2px solid var(--echo);border-radius:50%;opacity:0;animation:ping 3.6s ease-out infinite}
-.ring:nth-child(2){animation-delay:1.2s}.ring:nth-child(3){animation-delay:2.4s}
-@keyframes ping{0%{transform:scale(.2);opacity:.9}100%{transform:scale(14);opacity:0}}
-@media (prefers-reduced-motion:reduce){.ring{animation:none}}
-/* craft */
-.store{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 18px}
-.store span b{font-weight:800}
-.recipe{display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:center;padding:10px 0;border-top:1px solid #16272a}
-.recipe .name{font-weight:600}
-.recipe .lv{color:var(--echo);margin-left:6px}
-.recipe .eff{color:var(--dim);font-size:14px}
-.recipe .cost{font-size:14px}
+.hide{display:none!important}
+/* top bar */
+#top{position:fixed;left:0;right:0;top:0;height:46px;display:flex;align-items:center;gap:16px;padding:0 12px;background:rgba(16,24,19,.94);border-bottom:1px solid var(--edge);z-index:3;white-space:nowrap;overflow-x:auto}
+.res{display:flex;flex-direction:column;line-height:1.05;min-width:58px}
+.res b{font-size:16px}
+.res small{font-size:12px;color:var(--dim)}
+.res small.neg{color:var(--blood)}
+.res .lab{font-size:11px;color:var(--dim)}
+#top .sp{flex:1}
+.grp{display:flex;gap:4px;align-items:center}
+/* side panels */
+#side{position:fixed;right:10px;top:56px;width:300px;max-height:calc(100% - 140px);overflow:auto;background:rgba(24,36,29,.96);border:1px solid var(--edge);padding:14px;z-index:3}
+#chron{position:fixed;left:10px;bottom:76px;width:330px;max-height:34%;overflow:auto;background:rgba(24,36,29,.9);border:1px solid var(--edge);padding:10px 12px;z-index:3;font-size:14px}
+#chron h3{margin:0 0 6px;font-size:16px}
+#chron div.ev{padding:3px 0;border-top:1px solid rgba(255,255,255,.05);cursor:pointer}
+#chron div.ev:hover{color:#fff}
+#chron .yr{color:var(--dim);margin-right:6px;font-size:12px}
+#bar{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:rgba(16,24,19,.94);border:1px solid var(--edge);padding:8px;z-index:3;max-width:calc(100% - 20px)}
+#bar button{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;padding:5px 9px}
+#bar button small{font-size:11px;color:var(--dim)}
+#bar button.on small{color:#3b3010}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:3px 12px;margin:8px 0}
+.kv span:nth-child(odd){color:var(--dim)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.cost{font-size:12px;color:var(--dim)}
 .cost .no{color:var(--blood)}
-.sect{margin:20px 0 4px;font-weight:800;font-size:20px}
-.c-copper{color:#de8042}.c-iron{color:#c4aaa0}.c-quartz{color:#f0aae6}.c-cobalt{color:#5a96ff}.c-rubble{color:#a49c94}
-.stats{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;margin:14px 0 22px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.4)}
+/* overlays */
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,9,7,.72);z-index:10;padding:20px}
+.ov.on{display:flex}
+.card{background:var(--panel);border:1px solid var(--edge);padding:24px 28px;width:100%;max-width:760px;max-height:100%;overflow:auto}
+.card.wide{max-width:1040px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+/* title */
+#title{background:radial-gradient(ellipse at 50% 40%,#1f3327,#0b120e 70%)}
+#title .card{background:transparent;border:0;max-width:640px}
+#title h1{font-size:clamp(54px,10vw,104px);color:var(--brass);letter-spacing:.01em}
+#title .sub{font-family:var(--serif);font-size:20px;color:var(--ink);margin:6px 0 22px}
+.goals{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 18px;margin:18px 0}
+.goals div b{display:block;font-family:var(--serif);color:var(--brass)}
+input,select{font:inherit;color:var(--ink);background:#0e1611;border:1px solid var(--edge);padding:5px 8px;border-radius:3px}
+/* tech */
+.tree{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+.br h3{margin:0 0 8px}
+.tech{border:1px solid var(--edge);background:var(--panel2);padding:8px 10px;margin-bottom:8px;border-radius:3px;font-size:14px}
+.tech.done{border-color:var(--ok);background:#1d3322}
+.tech.cur{border-color:var(--brass)}
+.tech b{display:block;font-family:var(--serif);font-size:16px}
+.tech .prog{height:4px;background:#0e1611;margin-top:6px}
+.tech .prog i{display:block;height:100%;background:var(--brass)}
+.tech button{margin-top:6px;padding:3px 8px;font-size:13px}
+/* diplomacy */
+.realm{border-top:1px solid var(--edge);padding:12px 0}
+.relbar{height:6px;background:#0e1611;position:relative;margin:4px 0 8px;max-width:260px}
+.relbar i{position:absolute;top:0;bottom:0;left:50%}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:9px;border:1px solid var(--edge);margin-left:6px}
+.tag.war{border-color:var(--blood);color:#ff8b80}
+.tag.ally{border-color:var(--ok);color:#a6e38f}
+/* battle */
+#bbar{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:rgba(16,24,19,.95);border:1px solid var(--edge);padding:8px;z-index:4}
+#bhead{position:fixed;left:50%;transform:translateX(-50%);top:10px;background:rgba(16,24,19,.9);border:1px solid var(--edge);padding:6px 16px;z-index:4;font-family:var(--serif);font-size:18px;text-align:center}
+#bhead small{display:block;font-family:var(--sans);font-size:13px;color:var(--dim)}
+#toast{position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+#toast div{background:rgba(16,24,19,.95);border:1px solid var(--brass);padding:6px 14px;font-weight:500}
+.vic div{border-top:1px solid var(--edge);padding:10px 0}
+.meter{height:8px;background:#0e1611;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--brass)}
+@media (max-width:900px){#side{width:250px}#chron{display:none}}
 </style>
 </head>
 <body>
-<canvas id="c" aria-label="Sounding game view"></canvas>
+<canvas id="c"></canvas>
 
-<div id="title" class="ov on">
-  <div class="card">
-    <div class="mark"><span class="ring"></span><span class="ring"></span><span class="ring"></span><h1>Sounding</h1></div>
-    <p>The lift cable snapped and you're alone at the top of a cave system nobody has mapped. It's completely dark down here, and the things that live here hunt by sound.</p>
-    <p>Your scanner sends out a pulse that shows the walls for a moment. Anything nearby hears it too. Dig deeper, build better gear, and find out what's at the bottom.</p>
-    <div class="row" style="margin:22px 0 8px">
-      <button class="primary" id="startBtn">Descend</button>
-      <label class="dim" for="seedIn">Seed</label><input id="seedIn" placeholder="random" autocomplete="off">
-    </div>
-    <div class="keys">
-      <kbd>A D</kbd><span>Move. Hold <kbd>Shift</kbd> to sneak silently.</span>
-      <kbd>W</kbd><span>Jump, or climb ladders (<kbd>S</kbd> climbs down)</span>
-      <kbd>Space</kbd><span>Echo pulse. <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> set it to quiet, normal or powerful.</span>
-      <kbd>Mouse</kbd><span>Left button digs and fights. Right button places the selected item.</span>
-      <kbd>Q</kbd><span>Change placed item (ladder, station, glowstick). Mouse wheel works too.</span>
-      <kbd>F</kbd><span>Headlamp on or off. Light draws flying creatures.</span>
-      <kbd>G</kbd><span>Throw a decoy chime that lures creatures away</span>
-      <kbd>E</kbd><span>Stun charge</span>
-      <kbd>R</kbd><span>Medkit</span>
-      <kbd>C</kbd><span>Craft and upgrade (only at a station)</span>
-      <kbd>Esc</kbd><span>Pause. <kbd>M</kbd> mutes sound.</span>
-    </div>
+<div id="top" class="hide"></div>
+<div id="side" class="hide"></div>
+<div id="chron" class="hide"><h3>Chronicle</h3><div id="chronList"></div></div>
+<div id="bar" class="hide"></div>
+<div id="toast"></div>
+<div id="bhead" class="hide"></div>
+<div id="bbar" class="hide"></div>
+
+<div id="title" class="ov on"><div class="card">
+  <h1>Realmwright</h1>
+  <div class="sub">A village, a wilderness, and five rival crowns that never sleep.</div>
+  <p>You rule a small settlement at the edge of an unmapped continent. Grow it into a kingdom by farming, building, trading, scheming and fighting. The other realms don't wait for you: they build, ally and go to war with each other whether you're watching or not.</p>
+  <div class="goals">
+    <div><b>Conquest</b>Hold 60% of all cities on the continent.</div>
+    <div><b>Economy</b>Fill your treasury with 25,000 gold.</div>
+    <div><b>Diplomacy</b>Be allied with every surviving realm for one full year.</div>
+    <div><b>Knowledge</b>Research the Enlightenment.</div>
   </div>
-</div>
-
-<div id="pause" class="ov">
-  <div class="card">
-    <h2>Paused</h2>
-    <p class="dim">Seed <span id="pSeed"></span></p>
-    <div class="keys">
-      <kbd>Space</kbd><span>Pulse. Quiet reveals a little and makes little noise. Powerful lights up a huge area and wakes everything.</span>
-      <kbd>Shift</kbd><span>Sneak. Footsteps are noise; sneaking makes none.</span>
-      <kbd>C</kbd><span>Craft at a station. Stations recharge you, bank your ore and keep creatures away.</span>
-      <kbd>Death</kbd><span>If you've placed a station, you're recalled to the deepest one. The station is used up and the ore you're carrying is lost. With no station, the run ends.</span>
-      <kbd>Strata</kbd><span>Hard layers separate each zone. You need a better pickaxe to break through.</span>
-    </div>
-    <div class="row"><button class="primary" id="resumeBtn">Resume</button><button id="quitBtn">Abandon run</button></div>
+  <div class="row" style="margin-top:8px">
+    <button class="primary" id="startBtn">Found your realm</button>
+    <label class="dim" for="seedIn">Seed</label><input id="seedIn" size="10" placeholder="random">
+    <label class="dim" for="rivalsIn">Rivals</label><select id="rivalsIn"><option>3</option><option>4</option><option selected>5</option><option>6</option></select>
   </div>
-</div>
+  <p class="dim" style="margin-top:16px">Drag or use WASD to pan, scroll to zoom. Click to select, right-click to move armies. Space pauses.</p>
+</div></div>
 
-<div id="craft" class="ov">
-  <div class="card" id="craftCard"></div>
-</div>
-
-<div id="end" class="ov">
-  <div class="card">
-    <h2 id="endTitle"></h2>
-    <p id="endText"></p>
-    <div class="stats" id="endStats"></div>
-    <div class="row"><button class="primary" id="againBtn">Descend again</button><button id="retryBtn">Retry this seed</button></div>
-  </div>
-</div>
+<div id="modal" class="ov"><div class="card" id="modalCard"></div></div>
+<div id="techOv" class="ov"><div class="card wide" id="techCard"></div></div>
+<div id="dipOv" class="ov"><div class="card" id="dipCard"></div></div>
+<div id="vicOv" class="ov"><div class="card" id="vicCard"></div></div>
 
 <script>
 'use strict';
-// ================= utilities =================
+// ====================================================== utilities
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[(Math.random()*a.length)|0];
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function hash3(x,y,s){let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296}
-function seedFrom(str){if(!str)return(Math.random()*1e9)|0;if(/^\d+$/.test(str))return parseInt(str,10)%2147483647;let h=2166136261;for(const ch of str){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0)%2147483647}
+function hash2(x,y){let h=Math.imul(x,374761393)+Math.imul(y,668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296}
+function seedFrom(s){if(!s)return(Math.random()*1e9)|0;if(/^\d+$/.test(s))return+s%2147483647;let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0)%2147483647}
+function makeNoise(R){
+  const P=new Uint16Array(512),V=new Float32Array(256);
+  for(let i=0;i<256;i++){P[i]=i;V[i]=R()}
+  for(let i=255;i>0;i--){const j=(R()*(i+1))|0;const t=P[i];P[i]=P[j];P[j]=t}
+  for(let i=0;i<256;i++)P[i+256]=P[i];
+  const h=(x,y)=>V[P[P[x&255]+(y&255)]],sm=t=>t*t*(3-2*t);
+  return(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),u=sm(x-xi),v=sm(y-yi);const a=h(xi,yi),b=h(xi+1,yi),c=h(xi,yi+1),d=h(xi+1,yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v};
+}
+function fbm(n,x,y,o){let a=1,f=1,s=0,t=0;for(let i=0;i<o;i++){s+=n(x*f,y*f)*a;t+=a;a*=.5;f*=2}return s/t}
+const fmt=n=>n>=10000?(n/1000).toFixed(1)+'k':Math.floor(n).toString();
+const fmtRate=r=>(r>=0?'+':'')+(Math.abs(r)<10?r.toFixed(1):Math.round(r));
 
-// ================= world constants =================
-const W=96,H=520;
-const AIR=0,DIRT=1,STONE=2,DENSE=3,BASALT=4,OBSID=5,VOID=6,BEDROCK=7,COPPER=8,IRON=9,QUARTZ=10,COBALT=11,LAVA=12,LADDER=13,HEART=14;
-const TD=[
-  {n:'Air',solid:0},
-  {n:'Dirt',solid:1,tier:1,hard:.22,col:[96,70,50]},
-  {n:'Stone',solid:1,tier:1,hard:.4,col:[92,90,94]},
-  {n:'Dense rock',solid:1,tier:2,hard:.55,col:[72,76,90]},
-  {n:'Basalt',solid:1,tier:3,hard:.7,col:[58,54,62]},
-  {n:'Obsidian',solid:1,tier:4,hard:.85,col:[46,32,60]},
-  {n:'Voidstone',solid:1,tier:5,hard:1,col:[28,34,50]},
-  {n:'Bedrock',solid:1,tier:99,col:[22,22,24]},
-  {n:'Copper ore',solid:1,tier:1,hard:.5,col:[92,90,94],ore:[226,130,66],drop:'copper'},
-  {n:'Iron ore',solid:1,tier:2,hard:.65,col:[72,76,90],ore:[206,178,166],drop:'iron'},
-  {n:'Quartz',solid:1,tier:3,hard:.8,col:[58,54,62],ore:[244,172,232],drop:'quartz'},
-  {n:'Cobalt ore',solid:1,tier:4,hard:.95,col:[46,32,60],ore:[80,146,255],drop:'cobalt'},
-  {n:'Lava',solid:0,liquid:1},
-  {n:'Ladder',solid:0,ladder:1,tier:0,hard:.1},
-  {n:'The heart',solid:1,tier:99},
+// ====================================================== definitions
+const MW=72,MH=48,N=MW*MH;
+const WATER=0,PLAINS=1,FOREST=2,HILLS=3,MOUNT=4;
+const TER=[
+  {n:'Water',col:[52,92,120],move:0},
+  {n:'Plains',col:[141,166,88],move:1},
+  {n:'Forest',col:[74,112,62],move:1.6},
+  {n:'Hills',col:[160,140,92],move:1.8},
+  {n:'Mountains',col:[120,116,112],move:3.2},
 ];
-const BANDS=[
-  {name:'Upper tunnels',y0:0,note:'Soft ground. Copper is everywhere up here.'},
-  {name:'Deep stone',y0:110,note:'Iron country. Shriekers hunt by your light.'},
-  {name:'Crystal hollows',y0:230,note:'Quartz grows here. Burrowers feel you dig.'},
-  {name:'Magma deep',y0:350,note:'Lava below. Cobalt in the walls. Stalkers.'},
-  {name:'The hollow',y0:470,note:'Something enormous is breathing nearby.'},
+const DEP_N=['','Iron deposit','Gold deposit','Fertile soil'];
+const RES=['food','wood','stone','iron','gold'];
+const RES_N={food:'Food',wood:'Wood',stone:'Stone',iron:'Iron',gold:'Gold'};
+const BLD={
+  house:{n:'House',cost:{wood:25},ter:[1,2,3],w:0,d:'+8 population cap'},
+  farm:{n:'Farm',cost:{wood:20},ter:[1],w:3,d:'Food. Fertile soil yields 50% more.'},
+  lumber:{n:'Lumber camp',cost:{wood:10,gold:5},ter:[2],w:3,d:'Wood. Build on forest.'},
+  quarry:{n:'Quarry',cost:{wood:25},ter:[3,4],w:4,d:'Stone. Build on hills or mountains.'},
+  mine:{n:'Iron mine',cost:{wood:30,stone:15},dep:1,w:4,d:'Iron. Needs an iron deposit.'},
+  goldmine:{n:'Gold mine',cost:{wood:30,stone:25},dep:2,w:4,d:'Gold. Needs a gold deposit.'},
+  market:{n:'Market',cost:{wood:40,stone:25},ter:[1,3],w:3,tech:'coinage',d:'Gold, and powers trade routes'},
+  library:{n:'Library',cost:{wood:40,stone:30,gold:20},ter:[1,2,3],w:3,d:'Research points'},
+  barracks:{n:'Barracks',cost:{wood:50,stone:20},ter:[1,2,3],w:2,d:'Lets you train soldiers'},
+};
+const BLD_ORDER=['house','farm','lumber','quarry','mine','goldmine','market','library','barracks'];
+const FOUND_COST={food:60,wood:70,gold:40};
+const UNITS={
+  inf:{n:'Infantry',cost:{food:30,wood:10,gold:8},hp:12,atk:2.2,range:0,bspd:44,mspd:1,str:1},
+  arch:{n:'Archers',cost:{wood:30,gold:14},hp:8,atk:1.5,range:175,bspd:42,mspd:1,str:.9,tech:'archery'},
+  cav:{n:'Cavalry',cost:{food:40,iron:10,gold:24},hp:16,atk:3,range:0,bspd:82,mspd:1.6,str:1.6,tech:'horse'},
+  siege:{n:'Siege engine',cost:{wood:80,stone:30,iron:10,gold:30},hp:30,atk:5,range:270,bspd:22,mspd:.6,str:1.2,tech:'siege'},
+  scout:{n:'Scout',cost:{food:15,gold:6},hp:4,atk:0,range:0,bspd:90,mspd:2.2,str:.05,pop:1},
+};
+const UNIT_KEYS=['inf','arch','cav','siege'];
+const POP_PER=5;
+const BONUS={inf:{cav:1.6,siege:1.5},cav:{arch:1.9,siege:2.2},arch:{inf:1.4},siege:{wall:6}};
+const TECHS={
+  crop:{n:'Crop rotation',br:0,t:1,cost:132,d:'Farms +25% food'},
+  horse:{n:'Horse breeding',br:0,t:2,cost:330,req:'crop',d:'Unlocks cavalry'},
+  granary:{n:'Granaries',br:0,t:3,cost:660,req:'horse',d:'Faster growth, +15% population cap'},
+  irrigation:{n:'Irrigation',br:0,t:4,cost:1144,req:'granary',era:3,d:'Farms +40% food'},
+  masonry:{n:'Masonry',br:1,t:1,cost:132,d:'Unlocks walls, quarries +25%'},
+  fort:{n:'Fortification',br:1,t:2,cost:352,req:'masonry',era:2,d:'Unlocks castles, walls 15% stronger'},
+  architecture:{n:'Architecture',br:1,t:3,cost:660,req:'fort',d:'Buildings cost 25% less'},
+  engineering:{n:'Engineering',br:1,t:4,cost:1144,req:'architecture',era:3,d:'All production +10%, walls 30% sturdier'},
+  archery:{n:'Archery',br:2,t:1,cost:132,d:'Unlocks archers'},
+  ironw:{n:'Iron weapons',br:2,t:2,cost:330,req:'archery',d:'Soldiers deal 20% more damage'},
+  siege:{n:'Siegecraft',br:2,t:3,cost:660,req:'ironw',era:2,d:'Unlocks siege engines'},
+  plate:{n:'Plate armor',br:2,t:4,cost:1144,req:'siege',era:3,d:'Soldiers take 25% less damage'},
+  coinage:{n:'Coinage',br:3,t:1,cost:132,d:'Unlocks markets, taxes +20%'},
+  trade:{n:'Trade routes',br:3,t:2,cost:330,req:'coinage',d:'Open trade routes with other realms'},
+  guilds:{n:'Guilds',br:3,t:3,cost:660,req:'trade',d:'All production +15%'},
+  banking:{n:'Banking',br:3,t:4,cost:1144,req:'guilds',era:3,d:'Gold income +30%'},
+  enlight:{n:'The Enlightenment',br:4,t:5,cost:9240,req:'*',era:3,d:'Knowledge victory'},
+};
+const BRANCHES=['Agriculture','Construction','Military','Economics'];
+const PERS=[
+  {name:'Warlike',aggr:.9,trade:.3,sci:.3,expand:.65,br:[.2,.25,.45,.1]},
+  {name:'Mercantile',aggr:.3,trade:.95,sci:.5,expand:.6,br:[.25,.2,.15,.4]},
+  {name:'Scholarly',aggr:.25,trade:.5,sci:.95,expand:.5,br:[.25,.25,.15,.35]},
+  {name:'Expansionist',aggr:.55,trade:.4,sci:.45,expand:1,br:[.35,.3,.2,.15]},
+  {name:'Diplomatic',aggr:.15,trade:.7,sci:.6,expand:.55,br:[.3,.2,.15,.35]},
 ];
-const STRATA=[[110,DENSE],[230,BASALT],[350,OBSID],[470,VOID]];
-const bandAt=y=>{for(let b=BANDS.length-1;b>=0;b--)if(y>=BANDS[b].y0)return b;return 0};
-const ORES=['copper','iron','quartz','cobalt'];
-const ORE_COL={copper:'#de8042',iron:'#c4aaa0',quartz:'#f0aae6',cobalt:'#5a96ff',rubble:'#a49c94'};
+const COLORS=[[64,120,214],[196,62,52],[64,160,82],[212,168,48],[142,84,184],[214,120,44],[40,168,168]];
+const SYL1=['Val','Os','Kae','Thar','Mer','Bran','Eld','Ard','Cor','Hal','Ive','Dun','Rav','Sel','Tor','Wyn','Gal','Fen','Lor','Ast','Bel','Quen','Mor','Ash'];
+const SYL2=['dren','mark','lor','wick','holt','gard','mere','ford','burg','stead','vale','crest','haven','moor','reach','fall','ton','wyn','hollow','gate'];
+const YEAR=120;
 
-// ================= world generation =================
-function generate(seed){
-  const R=mulberry32(seed);
-  const g=new Uint8Array(W*H);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++)g[y*W+x]=R()<(y<230?.57:.55)?1:0;
-  for(let it=0;it<5;it++){
-    const n=new Uint8Array(W*H);
-    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-      let c=0;
-      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-        if(!dx&&!dy)continue;const xx=x+dx,yy=y+dy;
-        c+=(xx<0||yy<0||xx>=W||yy>=H)?1:g[yy*W+xx];
-      }
-      const i=y*W+x;n[i]=(c>=5||(g[i]&&c>=4))?1:0;
+// ====================================================== state
+let S=null;
+function nameGen(used){for(let i=0;i<200;i++){const n=pick(SYL1)+pick(SYL2);if(!used.has(n)){used.add(n);return n}}return 'Nameless'}
+const idx=(x,y)=>y*MW+x;
+const inb=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH;
+
+function genWorld(seed,rivals){
+  const R=mulberry32(seed),ne=makeNoise(R),nm=makeNoise(R);
+  const ter=new Uint8Array(N),dep=new Uint8Array(N);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const nx=x/MW-.5,ny=y/MH-.5,dist=Math.hypot(nx*1.05,ny*1.25)*2;
+    const e=fbm(ne,x/13,y/13,5)+.5-dist*.5,m=fbm(nm,x/9+40,y/9,4);
+    let t=e<.43?WATER:e>.76?MOUNT:e>.66?HILLS:m>.54?FOREST:PLAINS;
+    if(x===0||y===0||x===MW-1||y===MH-1)t=WATER;
+    ter[idx(x,y)]=t;
+  }
+  for(let i=0;i<N;i++){
+    const t=ter[i],r=R();
+    if((t===HILLS||t===MOUNT)&&r<.09)dep[i]=1;
+    else if((t===HILLS||t===MOUNT)&&r<.13)dep[i]=2;
+    else if(t===PLAINS&&r<.1)dep[i]=3;
+  }
+  // largest land mass
+  const comp=new Int32Array(N).fill(-1);let best=-1,bestSize=0,cid=0;
+  for(let i=0;i<N;i++){
+    if(ter[i]===WATER||comp[i]>=0)continue;
+    const st=[i];comp[i]=cid;let size=0;
+    while(st.length){const c=st.pop();size++;const cx=c%MW,cy=(c/MW)|0;
+      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+dx,ny=cy+dy;if(!inb(nx,ny))continue;const j=idx(nx,ny);if(ter[j]!==WATER&&comp[j]<0){comp[j]=cid;st.push(j)}}}
+    if(size>bestSize){bestSize=size;best=cid}cid++;
+  }
+  const cands=[];for(let i=0;i<N;i++)if(comp[i]===best&&ter[i]===PLAINS)cands.push(i);
+  const caps=[];
+  for(let k=0;k<=rivals;k++){
+    let bi=-1,bd=-1e9;
+    for(let s=0;s<300;s++){
+      const i=cands[(R()*cands.length)|0],x=i%MW,y=(i/MW)|0;
+      if(x<4||y<4||x>MW-5||y>MH-5)continue;
+      let d=1e9;for(const c of caps)d=Math.min(d,Math.hypot(c[0]-x,c[1]-y));
+      if(!caps.length)d=-Math.hypot(x-MW*.3,y-MH*.6)+(R()*4);
+      if(d>bd){bd=d;bi=i}
     }
-    g.set(n);
+    caps.push([bi%MW,(bi/MW)|0]);
   }
-  const carve=(cx,cy,rx,ry)=>{
-    for(let y=Math.floor(cy-ry);y<=cy+ry;y++)for(let x=Math.floor(cx-rx);x<=cx+rx;x++){
-      if(x<1||y<1||x>=W-1||y>=H-1)continue;
-      const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry;if(dx*dx+dy*dy<=1)g[y*W+x]=0;
-    }
-  };
-  for(let i=0;i<40;i++)carve(3+R()*(W-6),18+R()*(H-80),3+R()*7,2+R()*3.5);
-  for(let k=0;k<6;k++){
-    let x=8+R()*(W-16),y=14+R()*20,dx=0;
-    for(let s=0;s<3000&&y<H-50;s++){
-      carve(x,y,1.2+R()*.8,1.2+R()*.6);
-      dx+=(R()-.5)*.6;dx*=.9;x+=dx+(R()-.5)*.8;y+=R()*.9-.25;
-      if(x<4){x=4;dx=Math.abs(dx)}if(x>W-5){x=W-5;dx=-Math.abs(dx)}
-    }
-  }
-  const tiles=new Uint8Array(W*H);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    const i=y*W+x;if(!g[i]){tiles[i]=AIR;continue}
-    const b=bandAt(y),r=hash3((x/5)|0,(y/4)|0,seed);let t;
-    if(b===0)t=y<40?(r<.85?DIRT:STONE):(r<.35?DIRT:STONE);
-    else if(b===1)t=r<.55?STONE:DENSE;
-    else if(b===2)t=r<.35?DENSE:BASALT;
-    else if(b===3)t=r<.5?BASALT:OBSID;
-    else t=r<.4?OBSID:VOID;
-    tiles[i]=t;
-  }
-  for(const[sy,t]of STRATA)for(let y=sy;y<sy+3;y++)for(let x=0;x<W;x++)tiles[y*W+x]=t;
-  const strataRow=y=>STRATA.some(([sy])=>y>=sy-1&&y<sy+4);
-  const isRock=t=>t>=DIRT&&t<=VOID;
-  const vein=(t,n,y0,y1,a,b)=>{
-    for(let k=0;k<n;k++){
-      let x=2+R()*(W-4),y=y0+R()*(y1-y0);const L=a+R()*(b-a);
-      for(let s=0;s<L;s++){
-        const xi=x|0,yi=y|0;
-        if(xi>0&&xi<W-1&&yi>0&&yi<H-1&&!strataRow(yi)){const i=yi*W+xi;if(isRock(tiles[i]))tiles[i]=t}
-        x+=R()*2-1;y+=R()*2-1;
-      }
-    }
-  };
-  vein(COPPER,75,12,110,4,9);vein(COPPER,30,113,230,3,7);vein(IRON,60,113,230,4,8);
-  vein(COPPER,12,233,350,3,6);vein(IRON,25,233,350,3,7);vein(QUARTZ,60,233,350,3,8);
-  vein(IRON,10,353,470,3,6);vein(QUARTZ,18,353,470,3,6);vein(COBALT,55,353,470,3,7);
-  vein(COBALT,14,473,H-20,3,6);
-  // lava pools in the magma deep
-  const lc=[];for(let k=0;k<22;k++)lc.push([2+R()*(W-4),362+R()*100,4+R()*5]);
-  for(let y=466;y>=355;y--)for(let x=1;x<W-1;x++){
-    const i=y*W+x;if(tiles[i]!==AIR)continue;
-    const below=tiles[i+W];if(!(TD[below].solid||below===LAVA))continue;
-    for(const[cx,cy,r]of lc)if(Math.hypot(x-cx,(y-cy)*1.6)<r){tiles[i]=LAVA;break}
-  }
-  // start chamber
-  const cx=W>>1;
-  for(let y=1;y<=9;y++)for(let x=cx-8;x<=cx+8;x++)tiles[y*W+x]=AIR;
-  for(let x=cx-9;x<=cx+9;x++){tiles[10*W+x]=STONE;tiles[11*W+x]=DIRT}
-  // the hollow and the heart
-  const hy=496;
-  for(let y=hy+9;y<H;y++)for(let x=0;x<W;x++)tiles[y*W+x]=VOID;
-  for(let y=hy-10;y<=hy+9;y++)for(let x=cx-18;x<=cx+18;x++){
-    const dx=(x+.5-cx)/17.5,dy=(y+.5-hy)/9.5;if(dx*dx+dy*dy<=1)tiles[y*W+x]=AIR;
-  }
-  for(let y=hy+6;y<=hy+8;y++)for(let x=cx-1;x<=cx+1;x++)tiles[y*W+x]=HEART;
-  for(let x=cx-3;x<=cx+3;x++)tiles[(hy+9)*W+x]=VOID;
-  // borders
-  for(let y=0;y<H;y++){tiles[y*W]=BEDROCK;tiles[y*W+W-1]=BEDROCK}
-  for(let x=0;x<W;x++){tiles[x]=BEDROCK;for(let y=H-3;y<H;y++)tiles[y*W+x]=BEDROCK}
-  return{tiles,start:{x:cx-2.5,y:10},lift:{x:cx,y:9},hollow:{x:cx+.5,y:hy-1}};
+  return{ter,dep,caps,landSize:bestSize};
 }
 
-// ================= creature definitions =================
-const CT={
-  crawler:{name:'Crawler',hp:3,spd:2.1,hunt:3.9,dmg:10,hear:1,size:.42,col:[170,150,120]},
-  shrieker:{name:'Shrieker',hp:2,spd:3,hunt:6.6,dmg:7,hear:1.2,size:.36,light:1,shriek:1,col:[150,120,170]},
-  burrower:{name:'Burrower',hp:6,spd:1.7,hunt:3.3,dmg:16,hear:1.45,size:.5,burrow:1,col:[160,110,90]},
-  stalker:{name:'Stalker',hp:10,spd:2.5,hunt:5.3,dmg:24,hear:1.1,size:.55,light:1,col:[120,130,150]},
-  listener:{name:'The Listener',hp:45,spd:1.6,hunt:3.7,dmg:35,hear:1,size:1.25,burrow:1,boss:1,col:[200,190,210]},
-};
-const BAND_SPAWN=[[['crawler',1]],[['crawler',.6],['shrieker',.4]],[['shrieker',.45],['burrower',.3],['crawler',.25]],[['burrower',.35],['stalker',.45],['shrieker',.2]],[['stalker',1]]];
-const BAND_INIT=[12,18,20,22,4];
-const BAND_CAP=[6,9,11,12,4];
-function pickType(b){let r=Math.random();for(const[t,w]of BAND_SPAWN[b]){r-=w;if(r<=0)return t}return BAND_SPAWN[b][0][0]}
-
-// ================= progression =================
-const LV={
-  pick:{n:'Pickaxe',max:5,eff:l=>['','Digs dirt, stone and copper','Digs dense rock and iron','Digs basalt and quartz','Digs obsidian and cobalt','Digs voidstone'][l],
-    cost:[,,{copper:12,rubble:10},{iron:12,copper:6},{quartz:10,iron:8},{cobalt:10,quartz:6}]},
-  scan:{n:'Scanner',max:4,eff:l=>`Pulse range ×${[0,1,1.35,1.7,2.1][l]}, pulse noise ×${[0,1,.8,.65,.5][l]}`,
-    cost:[,,{copper:10,iron:4},{iron:8,quartz:6},{quartz:8,cobalt:5}]},
-  lamp:{n:'Headlamp',max:4,eff:l=>`Light radius ${[0,4.5,6,8,10][l]}, lower drain`,
-    cost:[,,{copper:6,rubble:4},{iron:6,quartz:2},{quartz:6,cobalt:3}]},
-  batt:{n:'Battery',max:4,eff:l=>`${[0,100,150,220,320][l]} energy`,
-    cost:[,,{copper:8},{iron:8,copper:4},{quartz:6,cobalt:4}]},
-  armor:{n:'Armor',max:4,eff:l=>`${[0,100,140,190,260][l]} health`,
-    cost:[,,{iron:6,copper:4},{quartz:6,iron:4},{cobalt:8,quartz:4}]},
-  pack:{n:'Ore pack',max:4,eff:l=>`Carry ${[0,24,40,60,90][l]} ore`,
-    cost:[,,{copper:6,rubble:10},{iron:6,copper:4},{quartz:4,iron:4}]},
-};
-const RECIPES=[
-  {id:'ladder',n:'Ladders',give:6,cost:{rubble:4},eff:'Climbable. Place with right click.'},
-  {id:'station',n:'Station',give:1,cost:{copper:8,rubble:12},eff:'Recharge point, ore bank, safe zone, and one recall if you die.'},
-  {id:'glow',n:'Glowsticks',give:3,cost:{copper:2,rubble:2},eff:'Permanent small light. Shriekers notice it.'},
-  {id:'decoy',n:'Decoy chimes',give:2,cost:{copper:3,rubble:3},eff:'Thrown. Rings for 9 seconds and pulls creatures toward it.'},
-  {id:'stun',n:'Stun charges',give:2,cost:{iron:3,copper:2},eff:'Freezes nearby creatures for 4 seconds.'},
-  {id:'medkit',n:'Medkit',give:1,cost:{copper:4,rubble:2},eff:'Restores 60 health.'},
-];
-const MODES=[{n:'Quiet',r:7,noise:9,cost:6},{n:'Normal',r:13,noise:20,cost:14},{n:'Powerful',r:24,noise:42,cost:30}];
-const PLACE=['ladder','station','glow'],PLACE_N={ladder:'Ladder',station:'Station',glow:'Glowstick'};
-const maxHP=()=>[0,100,140,190,260][G.lvl.armor];
-const maxEN=()=>[0,100,150,220,320][G.lvl.batt];
-const lampR=()=>[0,4.5,6,8,10][G.lvl.lamp];
-const lampDrain=()=>[0,1.3,1.05,.85,.65][G.lvl.lamp];
-const scanMult=()=>[0,1,1.35,1.7,2.1][G.lvl.scan];
-const scanDamp=()=>[0,1,.8,.65,.5][G.lvl.scan];
-const bagCap=()=>[0,24,40,60,90][G.lvl.pack];
-const bagCount=()=>ORES.reduce((s,k)=>s+G.bag[k],0);
-
-// ================= audio =================
-let AC=null,muted=false;
-function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume();return AC}
-function tone(f,dur,type='sine',vol=.15,slide=0,delay=0){
-  const a=ac();if(!a||muted)return;const t=a.currentTime+delay;
-  const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
-  if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+dur);
-  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.05);
+function newGame(seed,rivals){
+  const w=genWorld(seed,rivals);
+  const used=new Set();
+  S={seed,t:0,speed:1,paused:false,ter:w.ter,dep:w.dep,owner:new Int8Array(N).fill(-1),tileCity:new Int16Array(N).fill(-1),
+    bld:new Array(N).fill(null),explored:new Uint8Array(N),visible:new Uint8Array(N),
+    kingdoms:[],cities:[],armies:[],rel:[],st:[],warSince:[],log:[],nid:1,usedNames:used,
+    sel:null,tool:null,battle:null,queue:[],cam:{x:0,y:0,z:28},visT:0,econT:0,dipT:2,vicT:0,allyTime:0,over:false,lastProp:{},toastQ:[]};
+  const pers=[...PERS].sort(()=>Math.random()-.5);
+  for(let k=0;k<=rivals;k++){
+    const K={id:k,name:nameGen(used),color:COLORS[k],isPlayer:k===0,pers:k===0?null:pers[(k-1)%pers.length],
+      res:{food:110,wood:130,stone:50,iron:0,gold:70},pop:10,popCap:15,techs:new Set(),research:null,alive:true,
+      rate:{food:0,wood:0,stone:0,iron:0,gold:0,rp:0},bc:{},jobs:0,soldiers:0,weary:0,think:Math.random()*2,met:new Set([k]),trade:new Set(),era:1,capital:null,str:0};
+    S.kingdoms.push(K);
+  }
+  S.kingdoms[0].name='Your realm of '+S.kingdoms[0].name;
+  const nk=S.kingdoms.length;
+  for(let i=0;i<nk;i++){S.rel.push([]);S.st.push([]);S.warSince.push([]);for(let j=0;j<nk;j++){S.rel[i].push(i===j?100:Math.round(rnd(-10,20)));S.st[i].push(0);S.warSince[i].push(0)}}
+  for(let i=0;i<nk;i++)for(let j=0;j<i;j++)S.rel[i][j]=S.rel[j][i];
+  for(const K of S.kingdoms){
+    const[x,y]=w.caps[K.id];const c=foundCity(K,x,y,true,true);
+    // starting farm and house
+    const spots=[];for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(inb(xx,yy)&&(dx||dy)&&S.owner[idx(xx,yy)]===K.id)spots.push([xx,yy])}
+    spots.sort(()=>Math.random()-.5);
+    let f=0,h=0;for(const[xx,yy]of spots){const t=S.ter[idx(xx,yy)];if(!f&&t===PLAINS){S.bld[idx(xx,yy)]={type:'farm'};f=1}else if(!h&&t!==WATER&&t!==MOUNT){S.bld[idx(xx,yy)]={type:'house'};h=1}}
+    if(K.isPlayer){S.cam.x=x+.5;S.cam.y=y+.5}
+  }
+  // AI realms all know each other through envoys; the player has to discover them.
+  for(const a of S.kingdoms)for(const b of S.kingdoms)if(!a.isPlayer&&!b.isPlayer)a.met.add(b.id);
+  for(const K of S.kingdoms)econRecalc(K);
+  updVision();
+  log(`${S.kingdoms[0].name.replace('Your realm of ','')} is founded. The year is 1000.`,[0],S.kingdoms[0].capital);
 }
-const sfx={
-  ping(m){const f=[1500,950,560][m];tone(f,.5+m*.35,'sine',.16,.55);tone(f*.97,.4,'sine',.05,.6,.25+m*.12);tone(f*.94,.35,'sine',.025,.6,.5+m*.2)},
-  tick(){tone(170+Math.random()*90,.05,'square',.03,.6)},
-  crack(){tone(110,.12,'triangle',.08,.5)},
-  hurt(){tone(130,.28,'sawtooth',.12,.45)},
-  shriek(){tone(2300,.4,'sawtooth',.04,.45);tone(2600,.3,'square',.02,.5,.05)},
-  pick(){tone(900,.07,'triangle',.07,1.6)},
-  craft(){tone(520,.1,'triangle',.08,1.5);tone(780,.14,'triangle',.07,1.4,.08)},
-  deny(){tone(150,.13,'square',.05,.9)},
-  chime(){tone(1760,.5,'sine',.05,.98);tone(2637,.4,'sine',.03,.98,.04)},
-  stun(){tone(300,.4,'sawtooth',.08,4)},
-  hit(){tone(220,.08,'square',.06,.5)},
-  roar(){tone(55,1.6,'sawtooth',.18,.7);tone(41,1.8,'sine',.2,.8)},
-  win(){[523,659,784,1047].forEach((f,i)=>tone(f,.9,'sine',.08,1,i*.18))},
-};
 
-// ================= canvas =================
-const cv=$('#c'),ctx=cv.getContext('2d');
-let VW=800,VH=600,TS=22,DPR=1;
-function resize(){
-  DPR=Math.min(2,window.devicePixelRatio||1);VW=innerWidth;VH=innerHeight;
-  cv.width=VW*DPR;cv.height=VH*DPR;cv.style.width=VW+'px';cv.style.height=VH+'px';
-  ctx.setTransform(DPR,0,0,DPR,0,0);TS=Math.round(clamp(Math.min(VW/52,VH/30),16,30));
+// ====================================================== cities & territory
+function foundCity(K,x,y,capital,silent){
+  const c={id:S.nid++,name:nameGen(S.usedNames),owner:K.id,x,y,level:capital?2:1,walls:false,capital:!!capital,founded:S.t};
+  S.cities.push(c);if(capital)K.capital=c;
+  S.bld[idx(x,y)]=null;
+  recomputeTerritory();
+  if(!silent)log(`${K.name.replace('Your realm of ','')} founds the city of ${c.name}.`,[K.id],c);
+  return c;
 }
-addEventListener('resize',resize);resize();
-
-// ================= state =================
-let G=null;
-const stamp=new Uint32Array(W*H);let stampId=1;
-const mm=document.createElement('canvas');mm.width=W;mm.height=H;const mmc=mm.getContext('2d');let mmImg=null,mmDirty=true;
-
-function newGame(seed){
-  const w=generate(seed);
-  G={seed,tiles:w.tiles,echoT:new Float32Array(W*H).fill(-99),seen:new Uint8Array(W*H),light:new Float32Array(W*H),
-    t:0,player:{x:w.start.x,y:w.start.y,vx:0,vy:0,kb:0,w:.7,h:1.5,onGround:false,face:1,hp:100,energy:100,inv:0,climb:false,stepT:0,atk:0,mineNoise:0,wasGround:true},
-    lvl:{pick:1,scan:1,lamp:1,batt:1,armor:1,pack:1},
-    bag:{copper:0,iron:0,quartz:0,cobalt:0,rubble:0},
-    store:{copper:0,iron:0,quartz:0,cobalt:0,rubble:0},
-    items:{ladder:10,station:0,glow:2,decoy:1,stun:1,medkit:1},
-    sel:0,mode:1,lampOn:true,
-    stations:[{x:w.lift.x,y:w.lift.y,lift:true}],glows:[],creatures:[],pulses:[],rings:[],decoys:[],parts:[],msgs:[],
-    mine:{i:-1,p:0},stats:{ore:0,kills:0,pulses:0,maxDepth:0,deaths:0,recalls:0},
-    over:false,band:0,noiseLvl:0,shake:0,flash:0,spawnT:4,camX:w.start.x,camY:w.start.y,bossAwake:false,hollow:w.hollow,deny:0};
-  mmImg=mmc.createImageData(W,H);mmDirty=true;
-  spawnInitial();
-  msg('Ping the walls with Space. Dig down. Don\'t get heard.');
+const cityRadius=c=>[0,2.5,3.5,4.6][c.level];
+function recomputeTerritory(){
+  S.owner.fill(-1);S.tileCity.fill(-1);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const i=idx(x,y);if(S.ter[i]===WATER)continue;
+    let best=null,bd=1e9;
+    for(const c of S.cities){const d=Math.hypot(c.x-x,c.y-y);if(d<=cityRadius(c)&&d<bd){bd=d;best=c}}
+    if(best){S.owner[i]=best.owner;S.tileCity[i]=best.id}
+  }
 }
-function idx(x,y){return y*W+x}
-function tileAt(x,y){if(x<0||y<0||x>=W||y>=H)return BEDROCK;return G.tiles[y*W+x]}
-function solidAt(x,y){return TD[tileAt(x,y)].solid===1}
-function passable(x,y){const t=tileAt(x,y);return t===AIR||t===LADDER}
-function msg(t){if(!G)return;G.msgs.push({t,at:G.t});if(G.msgs.length>5)G.msgs.shift()}
-function markSeen(i){if(!G.seen[i]){G.seen[i]=1;mmDirty=true}}
+const cityById=id=>S.cities.find(c=>c.id===id);
+const cityAt=(x,y)=>S.cities.find(c=>c.x===x&&c.y===y);
+const kCities=k=>S.cities.filter(c=>c.owner===k);
+function militia(c){return c.level===1?{inf:2}:c.level===2?{inf:3,arch:1}:{inf:4,arch:2}}
+function wallBonus(c){if(!c.walls)return 1;const K=S.kingdoms[c.owner];return(c.level===3?1.9:1.45)*(K.techs.has('fort')?1.15:1)*(K.techs.has('engineering')?1.1:1)}
+function canFoundAt(K,x,y){
+  if(!inb(x,y))return'Off the map';
+  const i=idx(x,y),t=S.ter[i];
+  if(t===WATER||t===MOUNT)return'Cities need plains, forest or hills';
+  if(K.isPlayer&&!S.explored[i])return'You haven\'t explored there';
+  if(S.owner[i]!==-1&&S.owner[i]!==K.id)return'Another realm owns that land';
+  for(const c of S.cities)if(Math.hypot(c.x-x,c.y-y)<5)return'Too close to another city';
+  let near=false;for(const c of kCities(K.id))if(Math.hypot(c.x-x,c.y-y)<=10){near=true;break}
+  if(!near)return'Must be within 10 tiles of one of your cities';
+  return null;
+}
 
-function spawnInitial(){
-  for(let b=0;b<BANDS.length;b++){
-    const y0=BANDS[b].y0+4,y1=(b+1<BANDS.length?BANDS[b+1].y0:H)-6;let n=0,tries=0;
-    while(n<BAND_INIT[b]&&tries++<3000){
-      const x=1+((Math.random()*(W-2))|0),y=y0+((Math.random()*(y1-y0))|0);
-      if(!passable(x,y))continue;if(Math.hypot(x-G.player.x,y-G.player.y)<24)continue;
-      if(b===4&&Math.hypot(x-G.hollow.x,y-G.hollow.y)<20)continue;
-      G.creatures.push(makeCreature(pickType(b),x+.5,y+.5));n++;
+// ====================================================== economy
+function scaledCost(K,c){const m=K.techs.has('architecture')?.75:1;const o={};for(const k in c)o[k]=Math.ceil(c[k]*(k==='gold'?1:m));return o}
+const canPay=(K,c)=>Object.entries(c).every(([k,v])=>K.res[k]>=v);
+function pay(K,c){for(const[k,v]of Object.entries(c))K.res[k]-=v}
+function canBuild(K,type,x,y){
+  const b=BLD[type];if(!inb(x,y))return'Off the map';
+  const i=idx(x,y);
+  if(S.owner[i]!==K.id)return'You can only build inside your borders';
+  if(S.bld[i])return'There\'s already a building here';
+  if(cityAt(x,y))return'That\'s a city';
+  if(b.tech&&!K.techs.has(b.tech))return`Needs ${TECHS[b.tech].n}`;
+  if(b.dep){if(S.dep[i]!==b.dep)return`Needs ${DEP_N[b.dep].toLowerCase()}`}
+  else if(!b.ter.includes(S.ter[i]))return`Can't build on ${TER[S.ter[i]].n.toLowerCase()}`;
+  if(!canPay(K,scaledCost(K,b.cost)))return'Not enough resources';
+  return null;
+}
+function build(K,type,x,y){pay(K,scaledCost(K,BLD[type].cost));S.bld[idx(x,y)]={type};econRecalc(K)}
+function econRecalc(K){
+  const bc={};let fertile=0;
+  for(let i=0;i<N;i++){const b=S.bld[i];if(b&&S.owner[i]===K.id){bc[b.type]=(bc[b.type]||0)+1;if(b.type==='farm'&&S.dep[i]===3)fertile++}}
+  K.bc=bc;
+  const cs=kCities(K.id);
+  let cap=0;for(const c of cs)cap+=[0,15,25,35][c.level];
+  cap+=(bc.house||0)*8;if(K.techs.has('granary'))cap*=1.15;K.popCap=Math.round(cap);
+  let jobs=0;for(const t in bc)jobs+=bc[t]*BLD[t].w;K.jobs=jobs;
+  let sol=0;for(const a of S.armies)if(a.owner===K.id)sol+=armyPop(a);K.soldiers=sol;
+  const free=Math.max(0,K.pop-sol),wr=jobs?clamp(free/jobs,0,1):1;K.workRatio=wr;
+  const T=K.techs,g=(T.has('guilds')?1.15:1)*(T.has('engineering')?1.1:1);
+  const farms=(bc.farm||0)+fertile*.5;
+  const r=K.rate;
+  r.food=farms*1.15*(T.has('crop')?1.25:1)*(T.has('irrigation')?1.4:1)*wr*g + cs.length*.4;
+  r.wood=(bc.lumber||0)*.9*wr*g+.2;
+  r.stone=(bc.quarry||0)*.6*(T.has('masonry')?1.25:1)*wr*g;
+  r.iron=(bc.mine||0)*.45*wr*g;
+  r.gold=((bc.goldmine||0)*.5*wr+(bc.market||0)*.4*wr+K.pop*.014*(T.has('coinage')?1.2:1))*g;
+  for(const o of K.trade){const O=S.kingdoms[o];if(O.alive)r.gold+=.4+.18*Math.min(bc.market||0,O.bc.market||0)}
+  if(T.has('banking'))r.gold*=1.3;
+  r.rp=.5+(bc.library||0)*.7*wr;
+  const comp=sol/POP_PER;
+  r.food-=K.pop*.035+comp*.06;r.gold-=comp*.07;
+  K.str=kingdomStr(K);
+}
+function econTick(K,dt){
+  for(const k of RES)K.res[k]=Math.max(0,K.res[k]+K.rate[k]*dt);
+  const g=K.techs.has('granary')?1.4:1;
+  if(K.res.food>0&&K.rate.food>-.5){
+    K.pop+=(.008*K.pop+.08)*g*dt*clamp(1-K.pop/K.popCap,-.5,1);
+  }else if(K.res.food<=0){K.pop-=.015*K.pop*dt}
+  K.pop=Math.max(1,K.pop);
+  if(K.research){
+    K.research.p+=K.rate.rp*dt;
+    if(K.research.p>=TECHS[K.research.id].cost){
+      const id=K.research.id;K.techs.add(id);K.research=null;
+      if(K.isPlayer){toast(`Researched ${TECHS[id].n}`);refreshTech();renderBar()}
+      if(id==='enlight')log(`${dispName(K)} enters the Enlightenment.`,[K.id]);
+      econRecalc(K);
     }
   }
-  G.creatures.push(makeCreature('listener',G.hollow.x,G.hollow.y));
+  const era=K.techs.size>=9&&kCities(K.id).length>=3?3:K.techs.size>=4||kCities(K.id).length>=2?2:1;
+  if(era>K.era){K.era=era;const nm=['','Settlement','Expansion','Empire'][era];
+    if(K.isPlayer){showModal(`<h2>The age of ${nm}</h2><p>${era===2?'Your realm is ready to grow beyond one valley. Fortifications and siegecraft can now be researched, and the other realms are taking notice.':'You rule an empire now. The last and greatest discoveries are open to you, along with the Enlightenment itself.'}</p><div class="row"><button class="primary" data-close>Onward</button></div>`)}
+    else log(`${dispName(K)} enters the age of ${nm}.`,[K.id]);}
 }
-function makeCreature(type,x,y){
-  const d=CT[type];
-  return{type,d,x,y,hp:d.hp,state:type==='listener'?'sleep':'idle',tx:x,ty:y,lpx:x,lpy:y,path:[],pathT:0,atk:0,stun:0,
-    revA:-9,revB:-9,wander:Math.random()*3,lastSense:-99,invUntil:0,hurt:0,ph:Math.random()*6,shriekT:0};
+function availableTechs(K){
+  return Object.keys(TECHS).filter(id=>{
+    const t=TECHS[id];if(K.techs.has(id))return false;
+    if(t.era&&K.era<t.era)return false;
+    if(t.req==='*')return Object.keys(TECHS).every(o=>o==='enlight'||K.techs.has(o));
+    return!t.req||K.techs.has(t.req);
+  });
 }
+const techGold=id=>Math.round(TECHS[id].cost/3);
+function startResearch(K,id){if(K.research||!availableTechs(K).includes(id)||K.res.gold<techGold(id))return false;K.res.gold-=techGold(id);K.research={id,p:0};return true}
 
-// ================= raycasting =================
-function raycast(cx,cy,R,cb){
-  stampId++;const n=Math.max(24,Math.ceil(Math.PI*2*R*1.6));
-  for(let a=0;a<n;a++){
-    const ang=a/n*Math.PI*2,dx=Math.cos(ang),dy=Math.sin(ang);
-    for(let s=0;s<=R;s+=.3){
-      const x=cx+dx*s,y=cy+dy*s;if(x<0||y<0||x>=W||y>=H)break;
-      const tx=x|0,ty=y|0,i=ty*W+tx;
-      if(stamp[i]!==stampId){stamp[i]=stampId;cb(i,s)}
-      if(TD[G.tiles[i]].solid)break;
+// ====================================================== armies
+function newArmy(owner,x,y,units){const a={id:S.nid++,owner,x:x+.5,y:y+.5,units:{inf:0,arch:0,cav:0,siege:0,scout:0,...units},path:[],explore:false,target:null};S.armies.push(a);return a}
+const armySize=a=>UNIT_KEYS.reduce((s,k)=>s+a.units[k],0);
+const armyPop=a=>armySize(a)*POP_PER+a.units.scout;
+function armySpeed(a){let s=9;for(const k of[...UNIT_KEYS,'scout'])if(a.units[k])s=Math.min(s,UNITS[k].mspd);return s===9?1:s}
+const atkMult=K=>K.techs.has('ironw')?1.2:1,defMult=K=>K.techs.has('plate')?1.25:1;
+function unitsStr(u,K){let s=0;for(const k of UNIT_KEYS)s+=(u[k]||0)*UNITS[k].str;return s*atkMult(K)*defMult(K)}
+function kingdomStr(K){let s=0;for(const a of S.armies)if(a.owner===K.id)s+=unitsStr(a.units,K);return s}
+function cityDefense(c){
+  const K=S.kingdoms[c.owner];let s=unitsStr(militia(c),K);
+  for(const a of S.armies)if(a.owner===c.owner&&Math.hypot(a.x-c.x-.5,a.y-c.y-.5)<.8)s+=unitsStr(a.units,K);
+  return s*wallBonus(c);
+}
+function garrisonAt(c,owner){return S.armies.find(a=>a.owner===owner&&!a.path.length&&Math.hypot(a.x-c.x-.5,a.y-c.y-.5)<.3)}
+function trainUnit(K,c,type){
+  const u=UNITS[type];
+  if(type!=='scout'&&!(K.bc.barracks>0))return'Needs a barracks';
+  if(u.tech&&!K.techs.has(u.tech))return`Needs ${TECHS[u.tech].n}`;
+  const popNeed=u.pop||POP_PER;if(K.pop-K.soldiers<popNeed+2)return'Not enough free population';
+  if(!canPay(K,u.cost))return'Not enough resources';
+  pay(K,u.cost);
+  let a=garrisonAt(c,K.id);
+  if(type==='scout'){a=newArmy(K.id,c.x,c.y,{scout:1});if(K.isPlayer)a.explore=true}
+  else if(!a||a.units.scout&&!armySize(a))a=newArmy(K.id,c.x,c.y,{});
+  if(type!=='scout')a.units[type]++;
+  econRecalc(K);return null;
+}
+// A* over tiles
+function findPath(sx,sy,tx,ty){
+  if(!inb(tx,ty)||S.ter[idx(tx,ty)]===WATER)return null;
+  const open=[[0,sx,sy]],g=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),closed=new Uint8Array(N);
+  g[idx(sx,sy)]=0;let it=0;
+  while(open.length&&it++<6000){
+    let bi=0;for(let i=1;i<open.length;i++)if(open[i][0]<open[bi][0])bi=i;
+    const[,x,y]=open.splice(bi,1)[0],ci=idx(x,y);if(closed[ci])continue;closed[ci]=1;
+    if(x===tx&&y===ty){const p=[];let c=ci;while(c!==idx(sx,sy)){p.push([c%MW,(c/MW)|0]);c=from[c]}return p.reverse()}
+    for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){
+      const nx=x+dx,ny=y+dy;if(!inb(nx,ny))continue;const ni=idx(nx,ny);const mv=TER[S.ter[ni]].move;if(!mv||closed[ni])continue;
+      if(dx&&dy&&(!TER[S.ter[idx(x+dx,y)]].move||!TER[S.ter[idx(x,y+dy)]].move))continue;
+      const ng=g[ci]+mv*(dx&&dy?1.414:1);
+      if(ng<g[ni]){g[ni]=ng;from[ni]=ci;open.push([ng+Math.hypot(tx-nx,ty-ny),nx,ny])}
     }
   }
+  return null;
 }
-function los(x0,y0,x1,y1){
-  const d=Math.hypot(x1-x0,y1-y0),n=Math.ceil(d*3);
-  for(let k=1;k<n;k++){const t=k/n;if(solidAt(Math.floor(x0+(x1-x0)*t),Math.floor(y0+(y1-y0)*t)))return false}
-  return true;
-}
-const ECHO_SPD=34,ECHO_LIFE=3.2;
-function castEcho(cx,cy,R){
-  const t0=G.t;
-  raycast(cx,cy,R,(i,d)=>{const at=t0+d/ECHO_SPD;if(G.echoT[i]<t0||at<G.echoT[i])G.echoT[i]=at;markSeen(i)});
-  for(const c of G.creatures){
-    const d=Math.hypot(c.x-cx,c.y-cy);if(d>R+.5)continue;
-    const i=idx(c.x|0,c.y|0);
-    if(stamp[i]===stampId){c.revA=t0+d/ECHO_SPD;c.revB=c.revA+1.9}
+function orderMove(a,tx,ty){const p=findPath(Math.floor(a.x),Math.floor(a.y),tx,ty);if(p){a.path=p;return true}return false}
+function updArmy(a,dt){
+  a.cool=(a.cool||0)-dt;
+  if(a.explore&&!a.path.length&&a.cool<=0){a.cool=1;
+    // head for the nearest unexplored land
+    const K=S.kingdoms[a.owner],ax=Math.floor(a.x),ay=Math.floor(a.y);let best=null,bd=1e9;
+    for(let s=0;s<160;s++){const x=(Math.random()*MW)|0,y=(Math.random()*MH)|0,i=idx(x,y);if(S.ter[i]===WATER||(K.isPlayer&&S.explored[i]))continue;const d=Math.hypot(x-ax,y-ay);if(d<bd){bd=d;best=[x,y]}}
+    if(best)orderMove(a,best[0],best[1]);else a.explore=false;
+  }
+  let move=armySpeed(a)*dt;
+  while(move>0&&a.path.length){
+    const[nx,ny]=a.path[0],gx=nx+.5,gy=ny+.5,dx=gx-a.x,dy=gy-a.y,dl=Math.hypot(dx,dy);
+    const cost=TER[S.ter[idx(Math.floor(a.x),Math.floor(a.y))]].move||1,step=move/cost;
+    if(dl<=step){a.x=gx;a.y=gy;a.path.shift();move-=dl*cost}else{a.x+=dx/dl*step;a.y+=dy/dl*step;move=0}
   }
 }
-function echoAt(i){const T=G.echoT[i];if(G.t<T)return 0;const e=1-(G.t-T)/ECHO_LIFE;return e>0?e:0}
-
-// ================= noise =================
-function emitNoise(x,y,r,fromPlayer,show=true){
-  if(r<=0)return;
-  if(fromPlayer){G.noiseLvl=Math.max(G.noiseLvl,r);if(show)G.rings.push({x,y,r,t0:G.t})}
-  for(const c of G.creatures)hear(c,x,y,r,fromPlayer);
+function mergeArmies(){
+  for(let i=0;i<S.armies.length;i++){const a=S.armies[i];if(a.path.length||a.explore)continue;
+    for(let j=i+1;j<S.armies.length;j++){const b=S.armies[j];
+      if(b.owner!==a.owner||b.path.length||b.explore||Math.hypot(a.x-b.x,a.y-b.y)>.3)continue;
+      if(a.units.scout&&!armySize(a)||b.units.scout&&!armySize(b))continue;
+      for(const k in b.units)a.units[k]+=b.units[k];b.dead=true;
+      if(S.sel&&S.sel.kind==='army'&&S.sel.id===b.id)S.sel={kind:'army',id:a.id};
+    }}
+  S.armies=S.armies.filter(a=>!a.dead);
 }
-function hear(c,x,y,r,fromPlayer){
-  const d=Math.hypot(c.x-x,c.y-y),rr=r*c.d.hear;if(d>rr)return;
-  if(c.state==='sleep'){
-    if(r<18)return;
-    c.state='investigate';
-    if(!G.bossAwake){G.bossAwake=true;sfx.roar();G.shake=.8;msg('Something vast just woke up below you.')}
+
+// ====================================================== diplomacy
+const atWar=(a,b)=>S.st[a][b]===1,allied=(a,b)=>S.st[a][b]===2;
+function setStatus(a,b,s){S.st[a][b]=S.st[b][a]=s;S.warSince[a][b]=S.warSince[b][a]=S.t}
+function addRel(a,b,v){if(a===b)return;S.rel[a][b]=S.rel[b][a]=clamp(S.rel[a][b]+v,-100,100)}
+const dispName=K=>K.isPlayer?'Your realm':K.name;
+function knownName(K){return S.kingdoms[0].met.has(K.id)?dispName(K):'An unknown realm'}
+function declareWar(a,b,silent){
+  if(atWar(a,b)||a===b)return;
+  if(allied(a,b))addRel(a,b,-40);
+  setStatus(a,b,1);addRel(a,b,-35);
+  const A=S.kingdoms[a],B=S.kingdoms[b];
+  A.trade.delete(b);B.trade.delete(a);
+  log(`${knownName(A)} declares war on ${knownName(B).replace('Your realm','you')}.`,[a,b],B.capital,true);
+  if(b===0)toast(`${A.name} has declared war on you`);
+  // call allies of the defender to arms
+  for(const C of S.kingdoms)if(C.alive&&C.id!==a&&C.id!==b&&allied(C.id,b)&&!allied(C.id,a)){
+    if(C.isPlayer){S.queue.push({kind:'callToArms',ally:b,enemy:a})}
+    else{setStatus(C.id,a,1);addRel(C.id,a,-25);log(`${knownName(C)} honours its alliance and joins the war against ${knownName(A).replace('Your realm','you')}.`,[C.id,a])}
   }
-  if(fromPlayer&&(d<rr*.4||c.state==='hunt')){c.state='hunt';c.lastSense=G.t;return}
-  if(c.state==='hunt')return;
-  const err=d/rr*3;
-  c.state='investigate';c.tx=x+(Math.random()*2-1)*err;c.ty=y+(Math.random()*2-1)*err;c.invUntil=G.t+9;c.pathT=0;
+  econRecalc(A);econRecalc(B);
 }
-
-// ================= pathfinding =================
-const BR=24,BS=BR*2+1,bprev=new Int32Array(BS*BS),bq=new Int32Array(BS*BS);
-const DIRS=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
-function bfs(sx,sy,tx,ty){
-  bprev.fill(-2);const ox=sx-BR,oy=sy-BR,s=BR*BS+BR;
-  let h=0,t=0,best=s,bestD=1e9;bprev[s]=-1;bq[t++]=s;
-  while(h<t){
-    const c=bq[h++],cx=c%BS,cy=(c/BS)|0,wx=cx+ox,wy=cy+oy;
-    const d=Math.abs(wx-tx)+Math.abs(wy-ty);
-    if(d<bestD){bestD=d;best=c;if(d===0)break}
-    for(const[dx,dy]of DIRS){
-      const nx=cx+dx,ny=cy+dy;if(nx<0||ny<0||nx>=BS||ny>=BS)continue;
-      const ni=ny*BS+nx;if(bprev[ni]!==-2)continue;
-      if(!passable(wx+dx,wy+dy))continue;
-      if(dx&&dy&&(!passable(wx+dx,wy)||!passable(wx,wy+dy)))continue;
-      bprev[ni]=c;bq[t++]=ni;
-    }
-  }
-  const path=[];let c=best;
-  while(c!==-1&&c!==s){path.push([c%BS+ox,((c/BS)|0)+oy]);c=bprev[c]}
-  return path.reverse();
-}
-
-// ================= player physics =================
-const GRAV=40,JUMP=14.6;
-function boxHits(x0,y0,x1,y1){
-  for(let ty=Math.floor(y0);ty<=Math.floor(y1-1e-6);ty++)for(let tx=Math.floor(x0);tx<=Math.floor(x1-1e-6);tx++)if(solidAt(tx,ty))return true;
+function makePeace(a,b){if(!atWar(a,b))return;setStatus(a,b,0);addRel(a,b,15);log(`${knownName(S.kingdoms[a])} and ${knownName(S.kingdoms[b]).replace('Your realm','you')} make peace.`,[a,b])}
+function makeAlliance(a,b){setStatus(a,b,2);addRel(a,b,10);log(`${knownName(S.kingdoms[a])} and ${knownName(S.kingdoms[b]).replace('Your realm','you')} form an alliance.`,[a,b],null,true)}
+function hasMarket(K){return(K.bc.market||0)>0}
+function aiAccepts(K,kind,from){
+  const r=S.rel[K.id][from],F=S.kingdoms[from];
+  if(kind==='alliance'){for(const o of S.kingdoms)if(o.alive&&atWar(K.id,o.id)&&allied(from,o.id))return false;return r>=40&&!atWar(K.id,from)}
+  if(kind==='peace'){const ratio=K.str/(F.str+1);return S.t-S.warSince[K.id][from]>30&&(ratio<1.1||K.weary>40||r>-25)}
+  if(kind==='trade')return r>=0&&hasMarket(K)&&hasMarket(F)&&F.techs.has('trade')&&!atWar(K.id,from);
   return false;
 }
-function boxTouches(p,id,pad=0){
-  for(let ty=Math.floor(p.y-p.h-pad);ty<=Math.floor(p.y-1e-6+pad);ty++)for(let tx=Math.floor(p.x-p.w/2-pad);tx<=Math.floor(p.x+p.w/2-1e-6+pad);tx++)if(tileAt(tx,ty)===id)return true;
+function sharesBorder(a,b){
+  for(let y=0;y<MH;y+=1)for(let x=0;x<MW-1;x++){const o1=S.owner[idx(x,y)],o2=S.owner[idx(x+1,y)];if(o1===a&&o2===b||o1===b&&o2===a)return true;if(y<MH-1){const o3=S.owner[idx(x,y+1)];if(o1===a&&o3===b||o1===b&&o3===a)return true}}
   return false;
 }
-function moveX(p,dx){
-  if(!dx)return;const nx=p.x+dx;
-  if(!boxHits(nx-p.w/2,p.y-p.h,nx+p.w/2,p.y)){p.x=nx;return}
-  if((p.onGround||p.climb)&&!boxHits(nx-p.w/2,p.y-1-p.h,nx+p.w/2,p.y-1)){p.x=nx;p.y-=1;return}
-  if(dx>0)p.x=Math.floor(nx+p.w/2)-p.w/2-1e-4;else p.x=Math.floor(nx-p.w/2)+1+p.w/2+1e-4;
-  p.kb=0;
+function diplomacyTick(){
+  const ks=S.kingdoms.filter(k=>k.alive);
+  for(const A of ks)for(const B of ks){
+    if(A.id>=B.id)continue;
+    let d=-S.rel[A.id][B.id]*.01;
+    if(A.trade.has(B.id))d+=1;
+    if(allied(A.id,B.id))d+=.5;
+    if(atWar(A.id,B.id))d-=.6;
+    for(const C of ks)if(C!==A&&C!==B&&atWar(A.id,C.id)&&atWar(B.id,C.id))d+=1.2;
+    if(sharesBorder(A.id,B.id))d-=.5*(1+((A.pers?.aggr||.5)+(B.pers?.aggr||.5))/2);
+    if(A.pers&&B.pers&&A.pers.name===B.pers.name)d+=.3;
+    addRel(A.id,B.id,d);
+  }
+  for(const K of ks){
+    const wars=ks.filter(o=>atWar(K.id,o.id));
+    K.weary=clamp(K.weary+(wars.length?1.2:-1.5),0,100);
+    if(K.isPlayer)continue;
+    aiDiplomacy(K,ks,wars);
+  }
 }
-function moveY(p,dy){
-  p.onGround=false;if(!dy)return;const ny=p.y+dy;
-  if(!boxHits(p.x-p.w/2,ny-p.h,p.x+p.w/2,ny)){p.y=ny;return}
-  if(dy>0){p.y=Math.floor(ny-1e-6);p.onGround=true}else{p.y=Math.floor(ny-p.h)+1+p.h+1e-4}
-  p.vy=0;
+function aiDiplomacy(K,ks,wars){
+  const P=K.pers;
+  for(const O of ks){
+    if(O===K||!K.met.has(O.id))continue;
+    const r=S.rel[K.id][O.id],st=S.st[K.id][O.id];
+    const propose=(kind,text)=>{
+      if(O.isPlayer){const key=K.id+kind;if(S.t-(S.lastProp[key]||-999)<90)return;S.lastProp[key]=S.t;S.queue.push({kind,from:K.id,text});return}
+      if(aiAccepts(O,kind,K.id)){if(kind==='peace')makePeace(K.id,O.id);else if(kind==='alliance')makeAlliance(K.id,O.id);else if(kind==='trade'){K.trade.add(O.id);O.trade.add(K.id);log(`${knownName(K)} and ${knownName(O)} open a trade route.`,[K.id,O.id])}}
+    };
+    if(st===1){
+      const ratio=K.str/(O.str+1);
+      if(S.t-S.warSince[K.id][O.id]>150&&(ratio<.8||K.weary>70)&&Math.random()<.2)propose('peace');
+      continue;
+    }
+    if(st===0){
+      if(r<-25&&!wars.length&&K.str>O.str*(1.35-P.aggr*.45)&&K.str>4&&Math.random()<.12*P.aggr&&S.t>YEAR*1.5)declareWar(K.id,O.id);
+      else if(r>55&&Math.random()<.08)propose('alliance');
+      else if(r>5&&hasMarket(K)&&K.techs.has('trade')&&!K.trade.has(O.id)&&Math.random()<.15*P.trade)propose('trade');
+    }
+    if(st===2&&r<5&&Math.random()<.1){setStatus(K.id,O.id,0);log(`The alliance between ${knownName(K)} and ${knownName(O).replace('Your realm','you')} collapses.`,[K.id,O.id])}
+  }
 }
 
-// ================= input =================
-const keys={};const mouse={sx:0,sy:0,down:false};
-function key(k){return!!keys[k]}
-addEventListener('keydown',e=>{
-  const k=e.key.toLowerCase();
-  if(playing()&&[' ','arrowup','arrowdown','tab'].includes(k))e.preventDefault();
-  if(!keys[k])onPress(k);keys[k]=true;
-});
-addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
-addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.down=false});
-cv.addEventListener('mousemove',e=>{mouse.sx=e.clientX;mouse.sy=e.clientY});
-cv.addEventListener('mousedown',e=>{ac();mouse.sx=e.clientX;mouse.sy=e.clientY;if(e.button===0)mouse.down=true;if(e.button===2)placeItem()});
-addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
-cv.addEventListener('contextmenu',e=>e.preventDefault());
-cv.addEventListener('wheel',e=>{if(!G)return;G.sel=(G.sel+(e.deltaY>0?1:PLACE.length-1))%PLACE.length;e.preventDefault()},{passive:false});
-const mouseWorld=()=>({x:(mouse.sx-VW/2)/TS+G.camX,y:(mouse.sy-VH/2)/TS+G.camY});
-
-function playing(){return G&&!G.over&&!anyOverlay()}
-function anyOverlay(){return document.querySelector('.ov.on')!==null}
-function onPress(k){
-  if(!G)return;
-  if(k==='m'){muted=!muted;msg(muted?'Sound off':'Sound on');return}
-  if(k==='escape'||k==='p'){
-    if($('#craft').classList.contains('on')){closeCraft();return}
-    if($('#pause').classList.contains('on')){show('pause',false);return}
-    if(playing()){$('#pSeed').textContent=G.seed;show('pause',true)}
+// ====================================================== AI kingdoms
+function aiThink(K){
+  const P=K.pers,res=K.res,r=K.rate,cs=kCities(K.id);if(!cs.length)return;
+  // research
+  if(!K.research){
+    const av=availableTechs(K);
+    if(av.length){
+      const w=av.map(id=>TECHS[id].br===4?5:(P.br[TECHS[id].br]+.05)/TECHS[id].t);
+      let s=w.reduce((a,b)=>a+b,0)*Math.random(),ch=av[0];
+      for(let i=0;i<av.length;i++){s-=w[i];if(s<=0){ch=av[i];break}}
+      startResearch(K,ch);
+    }
+  }
+  // buildings
+  const bc=K.bc,need=[],free=K.pop-K.soldiers;
+  const foodMult=1.15*(K.techs.has('crop')?1.25:1)*(K.techs.has('irrigation')?1.4:1);
+  const foodNeed=K.pop*.035+K.soldiers/POP_PER*.06+.6;
+  if(K.popCap-K.pop<7)need.push('house');
+  if((bc.farm||0)<Math.ceil(foodNeed/foodMult)||res.food<30)need.push('farm');
+  if((bc.lumber||0)<1+cs.length+Math.floor(K.pop/25))need.push('lumber');
+  if(!bc.barracks&&K.pop>14)need.push('barracks');
+  if((bc.quarry||0)<cs.length)need.push('quarry');
+  if((bc.library||0)<Math.round(cs.length*(.4+P.sci)))need.push('library');
+  if((bc.mine||0)<cs.length)need.push('mine');
+  if((bc.goldmine||0)<cs.length)need.push('goldmine');
+  if(K.techs.has('coinage')&&(bc.market||0)<Math.round(cs.length*(.4+P.trade)))need.push('market');
+  if(K.popCap-K.pop<14)need.push('house');
+  let built=0,jobs=K.jobs;
+  for(const t of need){
+    if(built>=2)break;
+    if(BLD[t].w&&jobs+BLD[t].w>free+3&&!(t==='farm'&&r.food<0))continue;
+    const site=findSite(K,t);if(site&&!canBuild(K,t,site[0],site[1])){build(K,t,site[0],site[1]);built++;jobs+=BLD[t].w}
+  }
+  // city upgrades
+  for(const c of cs){
+    if(c.level===1&&canPay(K,{wood:90,stone:60,gold:50})&&Math.random()<.3){pay(K,{wood:80,stone:60,gold:40});upgradeCity(c)}
+    else if(!c.walls&&K.techs.has('masonry')&&canPay(K,{stone:110,wood:40})&&(P.aggr>.4||Math.random()<.4)){pay(K,{stone:80,wood:30});c.walls=true}
+    else if(c.level===2&&K.techs.has('fort')&&canPay(K,{stone:200,iron:30,gold:120})&&Math.random()<.25){pay(K,{stone:180,iron:30,gold:100});upgradeCity(c)}
+  }
+  // expansion
+  const maxC=Math.round([0,2,4,7][K.era]*(.6+P.expand*.6));
+  if(cs.length<maxC&&canPay(K,{food:FOUND_COST.food+30,wood:FOUND_COST.wood+20,gold:FOUND_COST.gold})&&K.pop>18&&Math.random()<.4*P.expand){
+    let best=null,bs=-1;
+    for(let s=0;s<80;s++){
+      const c=pick(cs),x=c.x+Math.round(rnd(-9,9)),y=c.y+Math.round(rnd(-9,9));
+      if(canFoundAt(K,x,y))continue;
+      let sc=0;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){if(!inb(x+dx,y+dy))continue;const i=idx(x+dx,y+dy);const t=S.ter[i];sc+=t===PLAINS?1:t===FOREST?.8:t===HILLS?.7:0;if(S.dep[i])sc+=1.5;if(S.owner[i]!==-1)sc-=1}
+      if(sc>bs){bs=sc;best=[x,y]}
+    }
+    if(best){pay(K,FOUND_COST);K.pop-=8;foundCity(K,best[0],best[1])}
+  }
+  // military
+  const wars=S.kingdoms.filter(o=>o.alive&&atWar(K.id,o.id));
+  const comp=K.soldiers/POP_PER;
+  const want=3+cs.length*(1.5+P.aggr*2)+K.era*3+(wars.length?8:0);
+  if(comp<want&&bc.barracks&&K.soldiers+POP_PER<K.pop*(wars.length?.55:.32+K.era*.03)&&r.food>.2){
+    const opts=['inf','inf','inf'];
+    if(K.techs.has('archery'))opts.push('arch','arch');
+    if(K.techs.has('horse'))opts.push('cav');
+    if(K.techs.has('siege')&&wars.length)opts.push('siege');
+    const t=pick(opts);
+    const c=frontCity(K,wars)||K.capital;
+    if(c&&canPay(K,{...UNITS[t].cost,gold:(UNITS[t].cost.gold||0)+15}))trainUnit(K,c,t);
+  }
+  aiMilitary(K,wars);
+}
+function findSite(K,type){
+  const b=BLD[type],cand=[];
+  for(let i=0;i<N;i++){
+    if(S.owner[i]!==K.id||S.bld[i])continue;
+    const x=i%MW,y=(i/MW)|0;if(cityAt(x,y))continue;
+    if(b.dep){if(S.dep[i]===b.dep)cand.push([x,y])}
+    else if(b.ter.includes(S.ter[i])&&!(S.dep[i]&&S.dep[i]!==3&&type!=='quarry')){
+      if(type==='farm'&&S.dep[i]===3)cand.unshift([x,y]);else cand.push([x,y]);
+    }
+  }
+  if(!cand.length)return null;
+  return type==='farm'&&S.dep[idx(cand[0][0],cand[0][1])]===3?cand[0]:pick(cand);
+}
+function upgradeCity(c){c.level++;if(c.level===3)c.walls=true;recomputeTerritory();for(const K of S.kingdoms)if(K.alive)econRecalc(K)}
+function frontCity(K,wars){
+  if(!wars.length)return null;let best=null,bd=1e9;
+  for(const c of kCities(K.id))for(const o of S.cities)if(wars.some(w=>w.id===o.owner)){const d=Math.hypot(c.x-o.x,c.y-o.y);if(d<bd){bd=d;best=c}}
+  return best;
+}
+function aiMilitary(K,wars){
+  const mine=S.armies.filter(a=>a.owner===K.id&&!a.units.scout);
+  if(!wars.length){
+    for(const a of mine)if(!a.path.length&&!cityAt(Math.floor(a.x),Math.floor(a.y))){const c=nearestOwnCity(K,a.x,a.y);if(c)orderMove(a,c.x,c.y)}
     return;
   }
-  if(k==='c'){if($('#craft').classList.contains('on'))closeCraft();else if(playing())openCraft();return}
-  if(!playing())return;
-  if(k===' ')pulse();
-  else if(k==='1'||k==='2'||k==='3'){G.mode=+k-1}
-  else if(k==='f'){G.lampOn=!G.lampOn}
-  else if(k==='q'||k==='tab'){G.sel=(G.sel+1)%PLACE.length}
-  else if(k==='g')throwDecoy();
-  else if(k==='e')useStun();
-  else if(k==='r')useMedkit();
-}
-function show(id,on){$('#'+id).classList.toggle('on',on);if(on){const b=$('#'+id+' button');if(b)b.focus()}else if(document.activeElement)document.activeElement.blur()}
-
-// ================= actions =================
-function deny(t){if(G.t-G.deny>.6){msg(t);sfx.deny();G.deny=G.t}}
-function pulse(){
-  const m=MODES[G.mode],p=G.player;
-  if(p.energy<m.cost){deny(`Not enough energy for a ${m.n.toLowerCase()} pulse`);return}
-  p.energy-=m.cost;const R=m.r*scanMult(),cx=p.x,cy=p.y-p.h*.6;
-  castEcho(cx,cy,R);G.pulses.push({x:cx,y:cy,R,t0:G.t});
-  emitNoise(cx,cy,m.noise*scanDamp(),true,false);G.stats.pulses++;sfx.ping(G.mode);
-}
-function throwDecoy(){
-  if(G.items.decoy<=0){deny('No decoy chimes. Craft some at a station.');return}
-  G.items.decoy--;const p=G.player,m=mouseWorld(),sx=p.x,sy=p.y-1.2;
-  let dx=m.x-sx,dy=m.y-sy;const d=Math.hypot(dx,dy)||1;dx/=d;dy/=d;
-  G.decoys.push({x:sx,y:sy,vx:dx*13,vy:dy*13-3,landed:false,life:9,nt:0});
-}
-function useStun(){
-  if(G.items.stun<=0){deny('No stun charges');return}
-  G.items.stun--;const p=G.player;let n=0;
-  for(const c of G.creatures)if(Math.hypot(c.x-p.x,c.y-p.y+.75)<5.5){c.stun=c.d.boss?1.5:4;n++}
-  G.pulses.push({x:p.x,y:p.y-.75,R:5.5,t0:G.t,stun:true});sfx.stun();emitNoise(p.x,p.y-.75,6,true);
-  if(n)msg(`Stunned ${n} creature${n>1?'s':''}`);
-}
-function useMedkit(){
-  const p=G.player;if(G.items.medkit<=0){deny('No medkits');return}
-  if(p.hp>=maxHP()){deny('Already at full health');return}
-  G.items.medkit--;p.hp=Math.min(maxHP(),p.hp+60);sfx.craft();
-}
-function nearStation(x,y,r){for(const s of G.stations)if(Math.hypot(s.x+.5-x,s.y+.5-y)<r)return s;return null}
-function placeItem(){
-  if(!playing())return;
-  const it=PLACE[G.sel],p=G.player,m=mouseWorld(),tx=Math.floor(m.x),ty=Math.floor(m.y);
-  if(Math.hypot(tx+.5-p.x,ty+.5-(p.y-.75))>4.2){deny('Too far away');return}
-  if(G.items[it]<=0){deny(`No ${PLACE_N[it].toLowerCase()}s left${it==='station'?'. Craft one at a station.':''}`);return}
-  const t=tileAt(tx,ty);
-  if(t!==AIR){deny('That spot is blocked');return}
-  if(it==='ladder'){G.tiles[idx(tx,ty)]=LADDER;markSeen(idx(tx,ty))}
-  else if(it==='station'){
-    if(!solidAt(tx,ty+1)){deny('Stations need solid ground under them');return}
-    if(nearStation(tx+.5,ty+.5,6)){deny('Too close to another station');return}
-    G.stations.push({x:tx,y:ty});msg('Station built. It will recall you once if you die.');
+  // defend: if an enemy army threatens a city, recall nearby forces
+  // attack: field armies march on the closest enemy city
+  for(const a of mine){
+    if(a.path.length)continue;
+    const here=cityAt(Math.floor(a.x),Math.floor(a.y));
+    let target=null,td=1e9;
+    for(const c of S.cities)if(wars.some(w=>w.id===c.owner)){const d=Math.hypot(c.x-a.x,c.y-a.y);if(d<td){td=d;target=c}}
+    if(!target)continue;
+    const myStr=unitsStr(a.units,K),need=cityDefense(target)*1.15;
+    if(here&&here.owner===K.id){
+      // keep a garrison behind
+      const keep=Math.ceil(armySize(a)*(here.capital?.35:.25));
+      if(armySize(a)-keep<3)continue;
+      const frac=(armySize(a)-keep)/armySize(a);
+      if(myStr*frac<need)continue;
+      const units={};for(const k of UNIT_KEYS){units[k]=Math.floor(a.units[k]*frac);a.units[k]-=units[k]}
+      const f=newArmy(K.id,here.x,here.y,units);
+      if(!armySize(f)){f.dead=true;continue}
+      orderMove(f,target.x,target.y);f.target=target.id;
+    }else if(myStr>=need*.8){orderMove(a,target.x,target.y)}
+    else{const c=nearestOwnCity(K,a.x,a.y);if(c)orderMove(a,c.x,c.y)}
   }
-  else if(it==='glow'){
-    if(G.glows.some(g=>g.x===tx&&g.y===ty))return;
-    G.glows.push({x:tx,y:ty});
-  }
-  G.items[it]--;sfx.pick();
+  S.armies=S.armies.filter(a=>!a.dead);
 }
-function breakTile(tx,ty){
-  const i=idx(tx,ty),t=G.tiles[i],td=TD[t];
-  if(td.drop){
-    if(bagCount()>=bagCap()){deny('Ore pack full. Bank it at a station.');return false}
-    G.bag[td.drop]++;G.stats.ore++;msg(`+1 ${td.drop}`);sfx.pick();
-  }else if(t===LADDER){G.items.ladder++}
-  else if(G.bag.rubble<99)G.bag.rubble++;
-  G.tiles[i]=AIR;mmDirty=true;
-  const col=td.ore||td.col||[150,120,80];
-  for(let k=0;k<7;k++)G.parts.push({x:tx+.5,y:ty+.5,vx:(Math.random()-.5)*6,vy:-Math.random()*5,life:.6+Math.random()*.4,col});
-  emitNoise(tx+.5,ty+.5,5,true);sfx.crack();
-  return true;
-}
-function damagePlayer(dmg,src){
-  const p=G.player;if(p.inv>0||G.over)return;
-  p.hp-=dmg;p.inv=.75;G.flash=.45;G.shake=.35;sfx.hurt();
-  if(src){p.kb=Math.sign(p.x-src.x||1)*9;p.vy=-6}
-  if(p.hp<=0)die();
-}
-function die(){
-  const p=G.player;G.stats.deaths++;
-  let best=null;for(const s of G.stations)if(!s.lift&&(!best||s.y>best.y))best=s;
-  if(!best){gameOver(false);return}
-  G.stations.splice(G.stations.indexOf(best),1);
-  G.stats.recalls++;const lost=bagCount();for(const k of ORES)G.bag[k]=0;
-  p.x=best.x+.5;p.y=best.y+1;p.vx=p.vy=p.kb=0;p.hp=Math.round(maxHP()*.6);p.energy=Math.max(p.energy,maxEN()*.5);p.inv=2;
-  for(const c of G.creatures)if(Math.hypot(c.x-p.x,c.y-p.y)<10&&!c.d.boss){c.state='idle';c.stun=2}
-  G.flash=.8;msg(`Emergency recall. The station burned out${lost?` and ${lost} carried ore was lost`:''}.`);
-}
+function nearestOwnCity(K,x,y){let b=null,bd=1e9;for(const c of kCities(K.id)){const d=Math.hypot(c.x+.5-x,c.y+.5-y);if(d<bd){bd=d;b=c}}return b}
 
-// ================= update =================
-function update(dt){
-  G.t+=dt;const p=G.player;
-  const left=key('a')||key('arrowleft'),right=key('d')||key('arrowright'),up=key('w')||key('arrowup'),down=key('s')||key('arrowdown');
-  const sneak=key('shift');
-  const inLava=boxTouches(p,LAVA);
-  const onLadder=boxTouches(p,LADDER);
-  const ax=(right?1:0)-(left?1:0);
-  const spd=(sneak?2.6:5.8)*(inLava?.45:1);
-  p.vx=ax*spd+p.kb;p.kb*=Math.pow(.02,dt);if(Math.abs(p.kb)<.1)p.kb=0;
-  if(ax)p.face=ax;
-  if(onLadder&&(up||down||p.vy>7))p.climb=true;
-  if(!onLadder)p.climb=false;
-  if(p.climb){p.vy=((down?1:0)-(up?1:0))*4.6}
+// ====================================================== conflict resolution
+function sumUnits(list){const u={inf:0,arch:0,cav:0,siege:0};for(const x of list)for(const k of UNIT_KEYS)u[k]+=x.units?x.units[k]:(x[k]||0);return u}
+function checkConflicts(){
+  if(S.battle||S.pending)return;
+  for(const a of S.armies){
+    if(a.dead)continue;
+    // armies meeting in the field
+    for(const b of S.armies){
+      if(b===a||b.dead||b.owner===a.owner||!atWar(a.owner,b.owner))continue;
+      if(Math.hypot(a.x-b.x,a.y-b.y)<.75){
+        const att=a.path.length?a:b,def=att===a?b:a;
+        const c=cityAt(Math.floor(def.x),Math.floor(def.y));
+        if(c&&c.owner===def.owner){engage(att,c);return}
+        engage(att,null,def);return;
+      }
+    }
+    // armies reaching an enemy city
+    const c=cityAt(Math.floor(a.x),Math.floor(a.y));
+    if(c&&c.owner!==a.owner&&atWar(a.owner,c.owner)&&Math.hypot(a.x-c.x-.5,a.y-c.y-.5)<.55){engage(a,c);return}
+  }
+}
+function engage(att,city,defArmy){
+  if(!armySize(att)){ // scouts alone are caught
+    if(att.units.scout){att.dead=true;S.armies=S.armies.filter(x=>!x.dead);if(att.owner===0)toast('Your scout was captured')}
+    return;
+  }
+  const attArmies=S.armies.filter(a=>a.owner===att.owner&&Math.hypot(a.x-att.x,a.y-att.y)<1.2&&armySize(a));
+  let defArmies,defOwner;
+  if(city){defOwner=city.owner;defArmies=S.armies.filter(a=>a.owner===city.owner&&Math.hypot(a.x-city.x-.5,a.y-city.y-.5)<1.2)}
+  else{defOwner=defArmy.owner;defArmies=S.armies.filter(a=>a.owner===defOwner&&Math.hypot(a.x-defArmy.x,a.y-defArmy.y)<1.2)}
+  const b={att:attArmies,def:defArmies,attOwner:att.owner,defOwner,city,x:city?city.x+.5:att.x,y:city?city.y+.5:att.y};
+  if(att.owner===0||defOwner===0){S.pending=b;openBattlePrompt(b)}
+  else autoResolve(b);
+}
+function autoResolve(b){
+  const A=S.kingdoms[b.attOwner],D=S.kingdoms[b.defOwner];
+  const aU=sumUnits(b.att),dU=sumUnits(b.def);
+  if(b.city){const m=militia(b.city);for(const k in m)dU[k]+=m[k]}
+  const sA=unitsStr(aU,A)*rnd(.85,1.15)*(1+(aU.siege&&b.city&&b.city.walls?Math.min(.5,aU.siege*.12):0));
+  const sD=unitsStr(dU,D)*(b.city?wallBonus(b.city):1)*rnd(.85,1.15);
+  const attWon=sA>sD,ws=Math.max(sA,sD),ls=Math.min(sA,sD),f=clamp(.6*ls/ws,.05,.85);
+  const surv=new Map();
+  for(const a of[...b.att,...b.def]){
+    const won=(b.att.includes(a))===attWon;
+    surv.set(a,won?Object.fromEntries(UNIT_KEYS.map(k=>[k,Math.max(0,Math.round(a.units[k]*(1-f)+rnd(-.4,.4)))])):null);
+  }
+  finishBattle(b,attWon,surv);
+}
+function finishBattle(b,attWon,surv,retreated){
+  const A=S.kingdoms[b.attOwner],D=S.kingdoms[b.defOwner];
+  const before=unitsStr(sumUnits(b.att),A)+unitsStr(sumUnits(b.def),D);
+  for(const[a,u]of surv){
+    if(!u){a.dead=true;continue}
+    for(const k of UNIT_KEYS)a.units[k]=u[k];
+    if(!armySize(a))a.dead=true;
+  }
+  S.armies=S.armies.filter(a=>!a.dead);
+  const where=b.city?b.city.name:placeName(b.x,b.y);
+  const W=attWon?A:D,L=attWon?D:A;
+  if(b.city&&attWon){captureCity(b.city,b.attOwner);for(const a of b.att)if(!a.dead){a.path=[];a.x=b.city.x+.5;a.y=b.city.y+.5}}
   else{
-    p.vy+=GRAV*dt*(inLava?.4:1);if(p.vy>28)p.vy=28;
-    if(up&&p.onGround){p.vy=-JUMP*(inLava?.6:1);if(!sneak)emitNoise(p.x,p.y,3,true)}
+    log(`${knownName(W)} defeats ${knownName(L).replace('Your realm','you')} at ${where}.`,[W.id,L.id],{x:Math.floor(b.x),y:Math.floor(b.y)});
+    if(!attWon)for(const a of b.att)if(!a.dead){const c=nearestOwnCity(A,a.x,a.y);if(c)orderMove(a,c.x,c.y);else a.path=[]}
   }
-  const wasGround=p.onGround,fallV=p.vy;
-  moveX(p,p.vx*dt);moveY(p,p.vy*dt);
-  if(p.onGround&&!wasGround){
-    if(fallV>21){damagePlayer(Math.round((fallV-21)*4.5));emitNoise(p.x,p.y,8,true)}
-    else if(fallV>9&&!sneak)emitNoise(p.x,p.y,4,true);
+  if(retreated)for(const a of b.att.concat(b.def))if(!a.dead&&a.owner===0){const c=nearestOwnCity(S.kingdoms[0],a.x,a.y);if(c)orderMove(a,c.x,c.y)}
+  L.weary=clamp(L.weary+10,0,100);
+  for(const K of[A,D])if(K.alive)econRecalc(K);
+  if(b.attOwner===0||b.defOwner===0){toast(W.isPlayer?`Victory at ${where}`:`Defeat at ${where}`)}
+}
+function placeName(x,y){let b=null,bd=1e9;for(const c of S.cities){const d=Math.hypot(c.x-x,c.y-y);if(d<bd){bd=d;b=c}}return b?(bd<1.5?b.name:'the fields near '+b.name):'the wilds'}
+function captureCity(c,newOwner){
+  const old=S.kingdoms[c.owner],N_=S.kingdoms[newOwner];
+  c.owner=newOwner;const wasCap=c.capital;c.capital=false;
+  if(c.level===3)c.level=2;
+  log(`${knownName(N_)} captures ${c.name} from ${knownName(old).replace('Your realm','you')}.`,[newOwner,old.id],c,true);
+  recomputeTerritory();
+  const left=kCities(old.id);
+  if(wasCap&&left.length){left.sort((a,b)=>b.level-a.level);left[0].capital=true;old.capital=left[0]}
+  if(!left.length){
+    old.alive=false;old.capital=null;
+    S.armies=S.armies.filter(a=>a.owner!==old.id);
+    for(const K of S.kingdoms){if(K.id!==old.id){S.st[K.id][old.id]=S.st[old.id][K.id]=0;K.trade.delete(old.id)}}
+    log(`The realm of ${old.isPlayer?'yours':old.name} has fallen.`,[old.id],c,true);
+    if(old.isPlayer){endGame(false,'Your last city has fallen. Your name survives only in other realms\' chronicles.');}
   }
-  if(p.onGround&&ax&&!sneak){p.stepT-=dt;if(p.stepT<=0){p.stepT=.4;emitNoise(p.x,p.y-.3,4,true)}}else p.stepT=Math.min(p.stepT,.15);
-  if(inLava){p.hp-=45*dt;G.flash=Math.max(G.flash,.2);if(p.hp<=0&&!G.over)die()}
-  p.inv-=dt;p.atk-=dt;
-  // energy
-  if(G.lampOn&&p.energy>0)p.energy=Math.max(0,p.energy-lampDrain()*dt);
-  p.energy=Math.min(maxEN(),p.energy+.6*dt);
-  // stations
-  const st=nearStation(p.x,p.y-.75,2.6);G.atStation=!!st;
-  if(st){
-    p.energy=Math.min(maxEN(),p.energy+25*dt);p.hp=Math.min(maxHP(),p.hp+10*dt);
-    const n=bagCount()+G.bag.rubble;
-    if(n>0){const parts=[];for(const k of[...ORES,'rubble'])if(G.bag[k]){parts.push(`${G.bag[k]} ${k}`);G.store[k]+=G.bag[k];G.bag[k]=0}
-      if(bagCount()===0&&parts.length&&parts.some(s=>!s.endsWith('rubble')))msg('Banked '+parts.join(', '));}
+  for(const K of S.kingdoms)if(K.alive)econRecalc(K);
+}
+
+// ====================================================== vision & chronicle
+function updVision(){
+  const V=S.visible;V.fill(0);
+  const reveal=(cx,cy,r)=>{for(let y=Math.floor(cy-r);y<=cy+r;y++)for(let x=Math.floor(cx-r);x<=cx+r;x++){if(!inb(x,y))continue;if(Math.hypot(x+.5-cx,y+.5-cy)<=r+.3)V[idx(x,y)]=1}};
+  for(let i=0;i<N;i++){const o=S.owner[i];if(o===0||o>0&&allied(0,o))reveal(i%MW+.5,((i/MW)|0)+.5,1.5)}
+  for(const c of S.cities)if(c.owner===0)reveal(c.x+.5,c.y+.5,5);
+  for(const a of S.armies)if(a.owner===0||allied(0,a.owner))reveal(a.x,a.y,a.units.scout&&!armySize(a)?5:3);
+  const P=S.kingdoms[0];
+  for(let i=0;i<N;i++)if(V[i]){S.explored[i]=1;const o=S.owner[i];if(o>0&&!P.met.has(o)){P.met.add(o);S.kingdoms[o].met.add(0);meet(S.kingdoms[o])}}
+  for(const a of S.armies)if(a.owner>0&&V[idx(Math.floor(a.x),Math.floor(a.y))]&&!P.met.has(a.owner)){P.met.add(a.owner);S.kingdoms[a.owner].met.add(0);meet(S.kingdoms[a.owner])}
+}
+function meet(K){
+  log(`Envoys arrive from ${K.name}, a ${K.pers.name.toLowerCase()} realm.`,[K.id],K.capital,true);
+  toast(`You've made contact with ${K.name}`);
+}
+function log(text,ids,at,important){
+  const e={t:S.t,text,ids,at:at?{x:at.x,y:at.y}:null,important};
+  S.log.unshift(e);if(S.log.length>200)S.log.pop();
+  renderChron();
+}
+const yearOf=t=>1000+Math.floor(t/YEAR);
+
+// ====================================================== victory
+function victoryState(){
+  const P=S.kingdoms[0],total=S.cities.length,mine=kCities(0).length;
+  const rivals=S.kingdoms.filter(k=>k.alive&&!k.isPlayer);
+  const allAllied=rivals.length>0&&rivals.every(r=>allied(0,r.id));
+  const tp=Object.keys(TECHS).filter(t=>P.techs.has(t)).length/Object.keys(TECHS).length;
+  return{
+    conquest:{p:mine/total/.6,label:`${mine} of ${total} cities (need ${Math.ceil(total*.6)})`},
+    economy:{p:P.res.gold/25000,label:`${fmt(P.res.gold)} of 25,000 gold`},
+    diplomacy:{p:allAllied?S.allyTime/YEAR:rivals.filter(r=>allied(0,r.id)).length/(rivals.length||1)*.5,label:allAllied?`Allied with everyone: ${Math.floor(S.allyTime)} of ${YEAR} days`:`Allied with ${rivals.filter(r=>allied(0,r.id)).length} of ${rivals.length} realms`},
+    knowledge:{p:P.techs.has('enlight')?1:tp,label:`${P.techs.size} of ${Object.keys(TECHS).length} discoveries`},
+  };
+}
+function checkVictory(dt){
+  const P=S.kingdoms[0];if(!P.alive||S.over)return;
+  const rivals=S.kingdoms.filter(k=>k.alive&&!k.isPlayer);
+  if(rivals.length&&rivals.every(r=>allied(0,r.id)))S.allyTime+=dt;else S.allyTime=0;
+  const v=victoryState();
+  if(v.conquest.p>=1||!rivals.length)return endGame(true,'Conquest. Most of the continent now flies your banner, and no crown left standing can challenge it.');
+  if(v.economy.p>=1)return endGame(true,'Economic dominance. Your treasury is the deepest on the continent. Every realm borrows from you, and none can afford to refuse you.');
+  if(S.allyTime>=YEAR)return endGame(true,'Diplomatic unification. After a year of unbroken alliance, the crowns of the continent agree to sit at one council, with you at its head.');
+  if(P.techs.has('enlight'))return endGame(true,'Knowledge victory. Your scholars have reached the Enlightenment, and the age that follows will carry your realm\'s name.');
+  const total=S.cities.length;
+  for(const K of rivals){
+    if(kCities(K.id).length/total>=.6)return endGame(false,`${K.name} has conquered most of the continent.`);
+    if(K.techs.has('enlight'))return endGame(false,`${K.name} reached the Enlightenment first. The new age belongs to them.`);
   }
-  // mining & fighting
-  if(mouse.down){
-    const m=mouseWorld(),pcx=p.x,pcy=p.y-.75;
-    let target=null;
-    for(const c of G.creatures){if(Math.hypot(c.x-m.x,c.y-m.y)<c.d.size+.45&&Math.hypot(c.x-pcx,c.y-pcy)<2.6+c.d.size){target=c;break}}
-    if(target){
-      G.mine.i=-1;
-      if(p.atk<=0){p.atk=.38;target.hp-=G.lvl.pick;target.hurt=.2;sfx.hit();emitNoise(target.x,target.y,6,true);
-        if(target.state!=='hunt'&&target.state!=='sleep'){target.state='hunt';target.lastSense=G.t}
-        if(target.hp<=0)killCreature(target);}
-    }else{
-      const tx=Math.floor(m.x),ty=Math.floor(m.y),i=idx(tx,ty),t=tileAt(tx,ty),td=TD[t];
-      const inReach=Math.hypot(tx+.5-pcx,ty+.5-pcy)<=3.2;
-      if(inReach&&(td.solid||t===LADDER)&&t!==BEDROCK&&t!==HEART){
-        if(td.tier>G.lvl.pick){deny(`${td.n} needs a tier ${td.tier} pickaxe`);G.mine.i=-1}
-        else{
-          if(G.mine.i!==i){G.mine.i=i;G.mine.p=0}
-          const time=td.hard/(1+.35*(G.lvl.pick-td.tier));
-          G.mine.p+=dt/time;p.mineNoise-=dt;
-          if(p.mineNoise<=0){p.mineNoise=.45;sfx.tick();emitNoise(tx+.5,ty+.5,3,true,false)}
-          if(G.mine.p>=1){breakTile(tx,ty);G.mine.i=-1}
+}
+function endGame(won,text){
+  if(S.over)return;S.over=true;
+  const P=S.kingdoms[0];
+  showModal(`<h2>${won?'Victory':'Defeat'}</h2><p>${text}</p>
+    <div class="kv"><span>Year</span><span>${yearOf(S.t)}</span><span>Cities</span><span>${kCities(0).length}</span><span>Population</span><span>${Math.floor(P.pop)}</span><span>Discoveries</span><span>${P.techs.size}</span><span>Seed</span><span>${S.seed}</span></div>
+    <div class="row"><button class="primary" id="newRun">New world</button><button data-close>Keep looking at the map</button></div>`);
+  $('#newRun').onclick=()=>{hideModal();showTitle()};
+}
+
+// ====================================================== world update
+function updateWorld(dt){
+  S.t+=dt;
+  for(const K of S.kingdoms)if(K.alive)econTick(K,dt);
+  S.econT-=dt;if(S.econT<=0){S.econT=1;for(const K of S.kingdoms)if(K.alive)econRecalc(K)}
+  for(const K of S.kingdoms){if(!K.alive||K.isPlayer)continue;K.think-=dt;if(K.think<=0){K.think=1.5;aiThink(K)}}
+  for(const a of S.armies)updArmy(a,dt);
+  mergeArmies();
+  checkConflicts();
+  S.dipT-=dt;if(S.dipT<=0){S.dipT=4;diplomacyTick()}
+  S.visT-=dt;if(S.visT<=0){S.visT=.3;updVision()}
+  checkVictory(dt);
+  if(!S.pending&&S.queue.length&&!anyModal())showProposal(S.queue.shift());
+}
+
+// ====================================================== tactical battles
+const BF={w:1000,h:620},WALL_X=640;
+function startTactical(b){
+  const B={b,squads:[],shots:[],walls:[],t:0,paused:false,over:false,sel:new Set(),drag:null,float:[]};
+  const pSide=b.attOwner===0?'A':'D';B.pSide=pSide;
+  const hasWalls=b.city&&b.city.walls;
+  if(hasWalls){const segH=BF.h/8,hp=(b.city.level===3?900:550)*(S.kingdoms[b.defOwner].techs.has('engineering')?1.3:1);for(let k=0;k<8;k++)B.walls.push({x:WALL_X,y:k*segH,w:18,h:segH,hp:k===3||k===4?hp*.6:hp,max:k===3||k===4?hp*.6:hp,gate:k===3||k===4})}
+  const place=(side,list)=>{
+    const by={inf:[],arch:[],cav:[],siege:[]};
+    for(const{type,army}of list)by[type].push(army);
+    const L=side==='A';const fx=x=>L?x:BF.w-x;
+    const col=(type,x0,y0,y1)=>{const arr=by[type];arr.forEach((army,i)=>{const n=arr.length,y=n===1?(y0+y1)/2:y0+(y1-y0)*i/(n-1);B.squads.push(makeSquad(side,type,army,fx(x0),y))})};
+    if(!L&&hasWalls){col('arch',300,80,540);col('inf',240,90,530);col('cav',140,150,470);col('siege',100,200,420)}
+    else{col('inf',270,110,510);col('arch',190,120,500);col('cav',240,30,90);if(by.cav.length>1){}col('siege',110,200,420)}
+  };
+  const listOf=(armies,extra)=>{const l=[];for(const a of armies)for(const k of UNIT_KEYS)for(let i=0;i<a.units[k];i++)l.push({type:k,army:a});if(extra)for(const k in extra)for(let i=0;i<extra[k];i++)l.push({type:k,army:'militia'});return l};
+  place('A',listOf(b.att));place('D',listOf(b.def,b.city?militia(b.city):null));
+  // spread cavalry across both flanks
+  for(const side of['A','D']){const cav=B.squads.filter(s=>s.side===side&&s.type==='cav');cav.forEach((s,i)=>{s.y=i%2?BF.h-60-(i>>1)*50:60+(i>>1)*50})}
+  for(const s of B.squads){s.tx=s.x;s.ty=s.y}
+  S.battle=B;
+  const A=S.kingdoms[b.attOwner],D=S.kingdoms[b.defOwner];
+  $('#bhead').innerHTML=`${b.city?'Siege of '+b.city.name:'Battle near '+placeName(b.x,b.y)}<small>${dispName(A)} attacks ${dispName(D).replace('Your realm','you')}${hasWalls?'. The city is walled; siege engines break walls fastest.':''}</small>`;
+  $('#bhead').classList.remove('hide');$('#bbar').classList.remove('hide');
+  for(const id of['top','side','chron','bar'])$('#'+id).classList.add('hide');
+  renderBattleBar();
+}
+function makeSquad(side,type,army,x,y){const u=UNITS[type];return{side,type,army,x,y,tx:x,ty:y,hpPer:u.hp,hp:u.hp*12,max:u.hp*12,target:null,cd:Math.random(),order:null,hold:false,flash:0}}
+const alive=s=>Math.ceil(s.hp/s.hpPer);
+function bOwner(B,side){return S.kingdoms[side==='A'?B.b.attOwner:B.b.defOwner]}
+function wallAt(B,y){return B.walls.find(w=>y>=w.y&&y<w.y+w.h&&w.hp>0)}
+function nearestEnemy(B,s,filter){let best=null,bd=1e9;for(const o of B.squads){if(o.side===s.side||o.hp<=0)continue;if(filter&&!filter(o))continue;const d=Math.hypot(o.x-s.x,o.y-s.y);if(d<bd){bd=d;best=o}}return[best,bd]}
+function updateBattle(dt){
+  const B=S.battle;if(B.paused||B.over)return;B.t+=dt;
+  const hasWalls=B.walls.length>0;
+  for(const s of B.squads){
+    if(s.hp<=0)continue;
+    s.cd-=dt;s.flash-=dt;
+    const u=UNITS[s.type],K=bOwner(B,s.side),isP=s.side===B.pSide;
+    if(s.target&&(s.target.hp<=0))s.target=null;
+    // choose a target
+    if(!s.target&&s.order!=='move'){
+      const defending=hasWalls&&s.side==='D'&&!isP;
+      let cand=null,cd=1e9;
+      if(s.type==='siege'&&hasWalls&&s.side==='A'){const ws=B.walls.filter(w=>w.hp>0);if(ws.length){ws.sort((a,b)=>(b.gate-a.gate)||Math.abs(a.y+a.h/2-s.y)-Math.abs(b.y+b.h/2-s.y));cand={wall:ws[0]};}}
+      if(!cand){
+        const pref=s.type==='cav'?o=>o.type==='arch'||o.type==='siege':null;
+        let[e,d]=pref?nearestEnemy(B,s,pref):[null,1e9];
+        const[e2,d2]=nearestEnemy(B,s);
+        if(!e||d>d2*1.8){e=e2;d=d2}
+        const reach=s.hold?(u.range||34):isP&&!s.order?(u.range?u.range+20:150):defending?(u.range?u.range:s.type==='cav'?120:90):1e9;
+        const breached=defending&&e&&e.x>WALL_X+18;
+        if(e&&(d<=reach||breached||(defending&&u.range&&d<=u.range))){cand=e;cd=d}
+        else if(isP&&s.order==='attack'&&e&&!s.hold)cand=e;
+      }
+      if(cand)s.target=cand.wall||cand;
+    }
+    // move
+    let gx=null,gy=null,stop=0;
+    if(s.target){
+      const t=s.target,tx=t.w?t.x+(s.x<t.x?0:t.w):t.x,ty=t.w?clamp(s.y,t.y+8,t.y+t.h-8):t.y;
+      gx=tx;gy=ty;stop=u.range?u.range*.92:(t.w?14:26);
+    }else if(s.order==='move'){gx=s.tx;gy=s.ty;stop=2}
+    if(s.hold&&s.order!=='move')gx=null;
+    if(gx!==null){
+      const dx=gx-s.x,dy=gy-s.y,d=Math.hypot(dx,dy);
+      // archers back away from approaching melee
+      if(u.range&&s.target&&!s.target.w&&!UNITS[s.target.type].range&&d<60&&!isP){s.x-=dx/d*u.bspd*dt*.7;s.y-=dy/d*u.bspd*dt*.7}
+      else if(d>stop){
+        const step=Math.min(d-stop,u.bspd*dt);let nx=s.x+dx/d*step,ny=s.y+dy/d*step;
+        if(hasWalls){
+          const crossing=(s.x<WALL_X-12&&nx>=WALL_X-12)||(s.x>WALL_X+30&&nx<=WALL_X+30);
+          if(crossing){const w=wallAt(B,ny);if(w){nx=s.x;if(s.side==='A'&&(!s.target||!s.target.w)&&(u.range===0||s.type==='siege'))s.target=w}}
         }
-      }else G.mine.i=-1;
+        s.x=nx;s.y=clamp(ny,10,BF.h-10);
+      }else if(s.order==='move'&&!s.target)s.order=null;
     }
-  }else G.mine.i=-1;
-  // depth & band
-  const b=bandAt(p.y);if(b>G.band){G.band=b;msg(`${BANDS[b].name}. ${BANDS[b].note}`)}
-  G.stats.maxDepth=Math.max(G.stats.maxDepth,p.y);
-  // victory
-  if(boxTouches(p,HEART,.35)){gameOver(true);return}
-  // creatures
-  for(const c of G.creatures){if(Math.abs(c.y-p.y)<70||c.d.boss)updCreature(c,dt)}
-  G.creatures=G.creatures.filter(c=>c.hp>0);
-  G.spawnT-=dt;if(G.spawnT<=0){G.spawnT=5;respawn()}
-  // decoys
-  for(const d of G.decoys){
-    d.life-=dt;
-    if(!d.landed){
-      d.vy+=GRAV*.6*dt;const nx=d.x+d.vx*dt,ny=d.y+d.vy*dt;
-      if(solidAt(Math.floor(nx),Math.floor(ny))){d.landed=true;d.vx=d.vy=0}else{d.x=nx;d.y=ny}
-    }
-    d.nt-=dt;if(d.landed&&d.nt<=0){d.nt=1.2;emitNoise(d.x,d.y,22,false);G.rings.push({x:d.x,y:d.y,r:22,t0:G.t,decoy:true});sfx.chime()}
-  }
-  G.decoys=G.decoys.filter(d=>d.life>0);
-  // fx
-  for(const q of G.parts){q.vy+=20*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt}
-  G.parts=G.parts.filter(q=>q.life>0);
-  G.pulses=G.pulses.filter(q=>G.t-q.t0<q.R/ECHO_SPD+.4);
-  G.rings=G.rings.filter(q=>G.t-q.t0<.7);
-  G.noiseLvl=Math.max(0,G.noiseLvl-dt*25);G.shake=Math.max(0,G.shake-dt);G.flash=Math.max(0,G.flash-dt);
-}
-function killCreature(c){
-  c.hp=0;G.stats.kills++;
-  for(let k=0;k<10;k++)G.parts.push({x:c.x,y:c.y,vx:(Math.random()-.5)*7,vy:-Math.random()*6,life:.7,col:c.d.col});
-  if(c.d.boss){msg('The Listener goes silent.')}
-}
-function respawn(){
-  const p=G.player,b=bandAt(p.y);let near=0;
-  for(const c of G.creatures)if(!c.d.boss&&Math.hypot(c.x-p.x,c.y-p.y)<45)near++;
-  if(near>=BAND_CAP[b]||G.creatures.length>160)return;
-  for(let k=0;k<25;k++){
-    const a=Math.random()*Math.PI*2,r=26+Math.random()*16,x=Math.floor(p.x+Math.cos(a)*r),y=Math.floor(p.y+Math.sin(a)*r);
-    if(!passable(x,y)||y<14)continue;const i=idx(x,y);
-    if(echoAt(i)>0||nearStation(x+.5,y+.5,10))continue;
-    G.creatures.push(makeCreature(pickType(bandAt(y)),x+.5,y+.5));return;
-  }
-}
-function updCreature(c,dt){
-  const p=G.player,px=p.x,py=p.y-.75,d=Math.hypot(px-c.x,py-c.y);
-  c.atk-=dt;c.hurt-=dt;c.ph+=dt;c.shriekT-=dt;
-  if(c.stun>0){c.stun-=dt;return}
-  if(c.state==='sleep')return;
-  let sense=d<2.2;
-  if(!sense&&c.d.light&&G.lampOn&&p.energy>0&&d<lampR()+4&&los(c.x,c.y,px,py))sense=true;
-  if(sense){
-    if(c.state!=='hunt'&&c.d.shriek&&c.shriekT<=0){c.shriekT=8;emitNoise(c.x,c.y,16,false);if(d<30)sfx.shriek()}
-    c.state='hunt';c.lastSense=G.t;
-  }
-  if(c.state==='hunt'){
-    c.tx=px;c.ty=py;c.lpx=px;c.lpy=py;
-    if(G.t-c.lastSense>5){c.state='investigate';c.tx=c.lpx;c.ty=c.lpy;c.invUntil=G.t+6}
-  }
-  if(c.state==='investigate'&&(G.t>c.invUntil||Math.hypot(c.tx-c.x,c.ty-c.y)<.8)){c.state='idle';c.wander=1+Math.random()*2}
-  if(c.state==='idle'){
-    c.wander-=dt;
-    if(c.wander<=0){c.wander=3+Math.random()*4;c.tx=c.x+Math.random()*12-6;c.ty=c.y+Math.random()*8-4;c.pathT=0}
-  }
-  let spd=c.state==='hunt'?c.d.hunt:c.d.spd;if(c.state==='idle')spd*=.5;
-  const ox=c.x,oy=c.y;
-  if(c.d.burrow){
-    const dx=c.tx-c.x,dy=c.ty-c.y,dl=Math.hypot(dx,dy);
-    if(dl>.05){const inRock=solidAt(c.x|0,c.y|0);const s=Math.min(dl,spd*(inRock?.45:1)*dt);c.x+=dx/dl*s;c.y+=dy/dl*s}
-    c.x=clamp(c.x,1.2,W-1.2);c.y=clamp(c.y,1.2,H-3.2);
-  }else{
-    c.pathT-=dt;
-    if(c.pathT<=0){c.pathT=c.state==='hunt'?.4:.8;c.path=bfs(c.x|0,c.y|0,Math.floor(c.tx),Math.floor(c.ty))}
-    let st=spd*dt;
-    while(st>0&&c.path.length){
-      const[nx,ny]=c.path[0],gx=nx+.5,gy=ny+.5,dx=gx-c.x,dy=gy-c.y,dl=Math.hypot(dx,dy);
-      if(dl<=st){c.x=gx;c.y=gy;c.path.shift();st-=dl}else{c.x+=dx/dl*st;c.y+=dy/dl*st;st=0}
-    }
-    if(!c.path.length&&c.state==='hunt'&&d<1.5&&d>.3){const s=Math.min(st,d-.3);c.x+=(px-c.x)/d*s;c.y+=(py-c.y)/d*s}
-  }
-  if(!c.d.boss&&nearStation(c.x,c.y,4.5)){
-    if(nearStation(ox,oy,4.5)){const s=nearStation(c.x,c.y,4.5),ax=c.x-(s.x+.5),ay=c.y-(s.y+.5),al=Math.hypot(ax,ay)||1;c.tx=c.x+ax/al*6;c.ty=c.y+ay/al*6}
-    else{c.x=ox;c.y=oy}
-    if(c.state==='hunt'&&G.t-c.lastSense>1.5){c.state='idle'}
-  }
-  if(d<.75+c.d.size&&c.atk<=0){damagePlayer(c.d.dmg,c);c.atk=1.1}
-}
-
-// ================= lighting =================
-function addLight(cx,cy,R,str){
-  const L=G.light;
-  raycast(cx,cy,R,(i,d)=>{const v=str*Math.pow(1-d/R,.7);if(v>L[i])L[i]=v;if(v>.15)markSeen(i)});
-}
-function computeLight(x0,y0,x1,y1){
-  const L=G.light;
-  for(let y=Math.max(0,y0-12);y<=Math.min(H-1,y1+12);y++)L.fill(0,y*W,y*W+W);
-  const p=G.player;
-  if(G.lampOn&&p.energy>0){const f=p.energy<8?(.5+.5*Math.random()):1;addLight(p.x,p.y-1.2,lampR(),f)}
-  else addLight(p.x,p.y-.8,1.6,.35);
-  for(const g of G.glows)if(g.y>y0-8&&g.y<y1+8)addLight(g.x+.5,g.y+.5,4,.75);
-  for(const s of G.stations)if(s.y>y0-6&&s.y<y1+6)addLight(s.x+.5,s.y+.3,3.2,.7);
-  for(const d of G.decoys)if(d.landed)addLight(d.x,d.y,1.8,.5);
-}
-
-// ================= rendering =================
-const shade=(c,l)=>`rgb(${c[0]*l|0},${c[1]*l|0},${c[2]*l|0})`;
-const BGC=[30,25,28],ECHO='#6ff2dc',MEM='#4f8f9c';
-function render(){
-  ctx.fillStyle='#000';ctx.fillRect(0,0,VW,VH);
-  if(!G)return;
-  const p=G.player;
-  const halfW=VW/2/TS,halfH=VH/2/TS;
-  let tcx=p.x,tcy=p.y-1;tcx=W>halfW*2?clamp(tcx,halfW,W-halfW):W/2;
-  G.camX+=(tcx-G.camX)*.15;G.camY+=(tcy-G.camY)*.15;
-  const shX=G.shake>0?(Math.random()-.5)*G.shake*14:0,shY=G.shake>0?(Math.random()-.5)*G.shake*14:0;
-  const camX=G.camX-shX/TS,camY=G.camY-shY/TS;
-  const x0=Math.max(0,Math.floor(camX-halfW)-1),x1=Math.min(W-1,Math.ceil(camX+halfW)+1);
-  const y0=Math.max(0,Math.floor(camY-halfH)-1),y1=Math.min(H-1,Math.ceil(camY+halfH)+1);
-  computeLight(x0,y0,x1,y1);
-  const SX=x=>(x-camX)*TS+VW/2,SY=y=>(y-camY)*TS+VH/2;
-  const T=G.tiles,L=G.light,t=G.t;
-  const open=(x,y)=>!solidAt(x,y);
-  for(let ty=y0;ty<=y1;ty++){
-    const sy=Math.floor(SY(ty));
-    for(let tx=x0;tx<=x1;tx++){
-      const i=ty*W+tx,id=T[i],l=L[i],sx=Math.floor(SX(tx));
-      if(id===AIR){if(l>.03){ctx.fillStyle=shade(BGC,l);ctx.fillRect(sx,sy,TS+1,TS+1)}continue}
-      if(id===LAVA){
-        const f=.75+.25*Math.sin(t*2+tx*.7+ty*.3);
-        ctx.fillStyle=`rgb(${230*f|0},${(70+40*Math.sin(t*3+tx))*f|0},20)`;ctx.fillRect(sx,sy,TS+1,TS+1);
-        if(!solidAt(tx,ty-1)&&tileAt(tx,ty-1)!==LAVA){ctx.fillStyle='rgba(255,170,60,.8)';ctx.fillRect(sx,sy,TS,2)}
-        G.seen[i]||markSeen(i);continue;
+    // attack
+    if(s.target&&s.cd<=0){
+      const t=s.target,d=t.w?Math.abs((s.x<t.x?t.x:t.x+t.w)-s.x)+Math.max(0,Math.abs(s.y-clamp(s.y,t.y,t.y+t.h))):Math.hypot(t.x-s.x,t.y-s.y);
+      const reach=u.range||(t.w?20:32);
+      if(d<=reach+4&&u.atk>0){
+        s.cd=1;const n=alive(s);
+        if(t.w){
+          const mult=s.type==='siege'?BONUS.siege.wall:s.type==='inf'?.6:s.type==='cav'?.3:.15;
+          t.hp-=n*u.atk*mult*atkMult(K);
+          if(t.hp<=0){t.hp=0;B.float.push({x:t.x+9,y:t.y+t.h/2,text:t.gate?'Gate broken':'Wall breached',t:2});for(const q of B.squads)if(q.target===t)q.target=null}
+          if(u.range)B.shots.push({x0:s.x,y0:s.y,x1:t.x+9,y1:clamp(s.y,t.y,t.y+t.h),t:0,big:s.type==='siege'});
+        }else{
+          const T=bOwner(B,t.side);
+          let dmg=n*u.atk*((BONUS[s.type]||{})[t.type]||1)*atkMult(K)/defMult(T);
+          if(hasWalls&&u.range&&t.side==='D'&&t.x>WALL_X+18&&s.side==='A')dmg*=.55;
+          if(hasWalls&&t.side==='A'&&s.side==='D'&&u.range&&s.x>WALL_X+18)dmg*=1.15;
+          if(u.range)B.shots.push({x0:s.x,y0:s.y,x1:t.x,y1:t.y,t:0,big:s.type==='siege',dmg,tgt:t});
+          else{t.hp-=dmg;t.flash=.15}
+        }
       }
-      if(id===LADDER){
-        if(l>.03){ctx.fillStyle=shade(BGC,l);ctx.fillRect(sx,sy,TS+1,TS+1)}
-        const v=Math.max(l,echoAt(i)*.9,G.seen[i]?.15:0);if(v<.02)continue;
-        ctx.fillStyle=shade([190,140,80],v);ctx.fillRect(sx+TS*.18,sy,2,TS);ctx.fillRect(sx+TS*.78,sy,2,TS);
-        for(let k=0;k<3;k++)ctx.fillRect(sx+TS*.18,sy+TS*(k/3+.12),TS*.62,2);
-        continue;
-      }
-      if(id===HEART){
-        const f=.6+.4*Math.pow(Math.sin(t*2.2),2);
-        ctx.fillStyle=`rgb(${170*f+40|0},${30*f|0},${60*f|0})`;ctx.fillRect(sx,sy,TS+1,TS+1);markSeen(i);continue;
-      }
-      const td=TD[id],e=echoAt(i),sn=G.seen[i];
-      if(l>.03){
-        ctx.fillStyle=shade(td.col,l*.95);ctx.fillRect(sx,sy,TS+1,TS+1);
-        const h=hash3(tx,ty,7);ctx.fillStyle=shade(td.col,l*.72);
-        ctx.fillRect(sx+h*TS*.6,sy+((h*7)%1)*TS*.6,TS*.22,TS*.18);
-        if(td.ore){ctx.fillStyle=shade(td.ore,Math.min(1,l*1.25));orespecks(sx,sy,tx,ty)}
-      }
-      const u=open(tx,ty-1),dn=open(tx,ty+1),lf=open(tx-1,ty),rt=open(tx+1,ty);
-      if(!(u||dn||lf||rt))continue;
-      if(e>0){
-        const fresh=t-G.echoT[i]<.18;
-        ctx.globalAlpha=Math.min(1,e*1.1);
-        if(fresh){ctx.fillStyle='rgba(111,242,220,.35)';ctx.fillRect(sx,sy,TS,TS)}
-        else{ctx.fillStyle='rgba(111,242,220,.07)';ctx.fillRect(sx,sy,TS,TS)}
-        ctx.fillStyle=ECHO;edges(sx,sy,u,dn,lf,rt,2);
-        if(td.ore){ctx.fillStyle=`rgb(${td.ore})`;orespecks(sx,sy,tx,ty)}
-        ctx.globalAlpha=1;
-      }else if(sn&&l<.3){
-        ctx.globalAlpha=.2;ctx.fillStyle=MEM;edges(sx,sy,u,dn,lf,rt,1);
-        if(td.ore){ctx.globalAlpha=.35;ctx.fillStyle=`rgb(${td.ore})`;orespecks(sx,sy,tx,ty)}
-        ctx.globalAlpha=1;
-      }
-      if(id===QUARTZ&&sn){ctx.globalAlpha=.25+.2*Math.sin(t*3+tx+ty);ctx.fillStyle='#f6c8ef';ctx.fillRect(sx+TS*.45,sy+TS*.3,2,2);ctx.globalAlpha=1}
     }
   }
-  // heart glow
-  const hx=SX(W/2+.5),hyy=SY(G.hollow.y+8);
-  if(Math.abs(hyy-VH/2)<VH){const gr=ctx.createRadialGradient(hx,hyy,0,hx,hyy,TS*7);gr.addColorStop(0,`rgba(220,40,70,${.25+.15*Math.sin(t*2.2)})`);gr.addColorStop(1,'rgba(220,40,70,0)');ctx.fillStyle=gr;ctx.fillRect(hx-TS*7,hyy-TS*7,TS*14,TS*14)}
-  // lava glow
-  // stations
-  for(const s of G.stations){
-    const sx=SX(s.x),sy=SY(s.y);if(sy<-TS*2||sy>VH+TS)continue;
-    ctx.fillStyle='#2a3c40';ctx.fillRect(sx+TS*.15,sy+TS*.25,TS*.7,TS*.75);
-    ctx.fillStyle='#476066';ctx.fillRect(sx+TS*.15,sy+TS*.25,TS*.7,TS*.12);
-    ctx.fillStyle=`rgba(111,242,220,${.6+.4*Math.sin(t*3)})`;ctx.fillRect(sx+TS*.35,sy+TS*.5,TS*.3,TS*.22);
-    ctx.fillStyle='#476066';ctx.fillRect(sx+TS*.48,sy-TS*.25,2,TS*.5);
-    if(s.lift){ctx.strokeStyle='#476066';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+TS*.5,sy-TS*.25);ctx.lineTo(sx+TS*.5,sy-TS*9);ctx.stroke()}
+  // separation within a side
+  const live=B.squads.filter(s=>s.hp>0);
+  for(let i=0;i<live.length;i++)for(let j=i+1;j<live.length;j++){
+    const a=live[i],c=live[j],dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy)||.01,min=a.side===c.side?30:22;
+    if(d<min){const p=(min-d)/2;a.x-=dx/d*p;a.y-=dy/d*p;c.x+=dx/d*p;c.y+=dy/d*p}
   }
-  for(const g of G.glows){const sx=SX(g.x),sy=SY(g.y);ctx.fillStyle='#d8ff8a';ctx.fillRect(sx+TS*.44,sy+TS*.3,TS*.14,TS*.45)}
-  for(const d of G.decoys){const sx=SX(d.x),sy=SY(d.y);ctx.fillStyle='#9fd8ff';ctx.beginPath();ctx.arc(sx,sy,TS*.18,0,7);ctx.fill()}
-  // mining target
-  if(playing()||G.over){
-    const m=mouseWorld(),tx=Math.floor(m.x),ty=Math.floor(m.y),td=TD[tileAt(tx,ty)];
-    const pcx=p.x,pcy=p.y-.75,inReach=Math.hypot(tx+.5-pcx,ty+.5-pcy)<=3.2;
-    if(inReach){
-      ctx.lineWidth=1;
-      if(td.solid&&td.tier<99){ctx.strokeStyle=td.tier>G.lvl.pick?'rgba(229,72,77,.8)':'rgba(255,255,255,.45)';ctx.strokeRect(SX(tx)+.5,SY(ty)+.5,TS-1,TS-1)}
-      else if(tileAt(tx,ty)===AIR){ctx.strokeStyle='rgba(255,191,105,.25)';ctx.strokeRect(SX(tx)+.5,SY(ty)+.5,TS-1,TS-1)}
-    }
-    if(G.mine.i>=0){
-      const mx=G.mine.i%W,my=(G.mine.i/W)|0,sx=SX(mx),sy=SY(my);
-      ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(sx,sy+TS-4,TS,4);ctx.fillStyle='#ffbf69';ctx.fillRect(sx,sy+TS-4,TS*G.mine.p,4);
-    }
-  }
-  // creatures
-  for(const c of G.creatures){
-    const sx=SX(c.x),sy=SY(c.y);if(sx<-80||sy<-80||sx>VW+80||sy>VH+80)continue;
-    const ti=idx(clamp(c.x|0,0,W-1),clamp(c.y|0,0,H-1)),lit=L[ti];
-    const rev=t>=c.revA&&t<c.revB;
-    const vis=lit>.18||rev||c.d.boss&&G.bossAwake&&Math.hypot(c.x-p.x,c.y-p.y)<6;
-    if(vis){
-      const echoMode=lit<=.18;
-      const a=echoMode?clamp((c.revB-t)/1.2,0,1):Math.min(1,lit*1.4);
-      ctx.globalAlpha=a;drawCreature(c,sx,sy,echoMode?null:c.d.col);ctx.globalAlpha=1;
-    }
-    if(c.state==='hunt'&&!c.stun&&Math.hypot(c.x-p.x,c.y-p.y)<28&&Math.sin(c.ph*9)>-.6){
-      const er=c.d.size*TS;ctx.fillStyle=c.d.boss?'#ffd166':'#ff4040';
-      ctx.fillRect(sx-er*.35,sy-er*.25,2,2);ctx.fillRect(sx+er*.25,sy-er*.25,2,2);
-    }
-    if(c.stun>0&&vis){ctx.strokeStyle='rgba(159,216,255,.7)';ctx.beginPath();ctx.arc(sx,sy,c.d.size*TS+4,0,7);ctx.stroke()}
-  }
-  // player
-  drawPlayer(SX(p.x),SY(p.y));
-  // particles
-  for(const q of G.parts){ctx.globalAlpha=clamp(q.life*1.6,0,1);ctx.fillStyle=`rgb(${q.col})`;ctx.fillRect(SX(q.x)-2,SY(q.y)-2,4,4)}
-  ctx.globalAlpha=1;
-  // pulses and noise rings
-  for(const q of G.pulses){
-    const r=Math.min(q.R,(t-q.t0)*ECHO_SPD),a=q.stun?clamp(1-(t-q.t0)*2,0,1):clamp(1-(t-q.t0)/(q.R/ECHO_SPD+.4),0,1);
-    ctx.strokeStyle=q.stun?`rgba(159,216,255,${a})`:`rgba(111,242,220,${a*.8})`;ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(SX(q.x),SY(q.y),Math.max(1,(q.stun?q.R*(t-q.t0)*3:r)*TS),0,7);ctx.stroke();
-  }
-  for(const q of G.rings){
-    const k=(t-q.t0)/.7;ctx.strokeStyle=q.decoy?`rgba(159,216,255,${(1-k)*.35})`:`rgba(229,72,77,${(1-k)*.35})`;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(SX(q.x),SY(q.y),Math.max(1,q.r*k*TS),0,7);ctx.stroke();
-  }
-  // vignette & damage flash
-  const vg=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.3,VW/2,VH/2,Math.max(VW,VH)*.7);
-  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.6)');ctx.fillStyle=vg;ctx.fillRect(0,0,VW,VH);
-  if(G.flash>0){ctx.fillStyle=`rgba(200,20,30,${G.flash*.35})`;ctx.fillRect(0,0,VW,VH)}
-  hud();
+  for(const s of live){s.x=clamp(s.x,10,BF.w-10);s.y=clamp(s.y,10,BF.h-10);
+    if(hasWalls&&s.x>WALL_X-12&&s.x<WALL_X+30&&wallAt(B,s.y))s.x=s.x<WALL_X+9?WALL_X-12:WALL_X+30}
+  for(const sh of B.shots){sh.t+=dt*3;if(sh.t>=1&&sh.tgt){sh.tgt.hp-=sh.dmg;sh.tgt.flash=.15;sh.tgt=null}}
+  B.shots=B.shots.filter(sh=>sh.t<1);
+  for(const f of B.float)f.t-=dt;B.float=B.float.filter(f=>f.t>0);
+  for(const s of B.squads)if(s.hp<0)s.hp=0;
+  const aLive=B.squads.some(s=>s.side==='A'&&s.hp>0),dLive=B.squads.some(s=>s.side==='D'&&s.hp>0);
+  if(!aLive||!dLive)endTactical(aLive);
+  else if(B.t>240)endTactical(false,true);
 }
-function edges(sx,sy,u,d,l,r,w){if(u)ctx.fillRect(sx,sy,TS,w);if(d)ctx.fillRect(sx,sy+TS-w,TS,w);if(l)ctx.fillRect(sx,sy,w,TS);if(r)ctx.fillRect(sx+TS-w,sy,w,TS)}
-function orespecks(sx,sy,tx,ty){
-  const s=Math.max(3,TS*.18);
-  for(let k=0;k<3;k++){const a=hash3(tx,ty,k*31+1),b=hash3(tx,ty,k*31+2);ctx.fillRect(sx+a*(TS-s),sy+b*(TS-s),s,s)}
-}
-function drawCreature(c,sx,sy,col){
-  const z=TS*c.d.size,cc=col?shade(col,c.hurt>0?1.6:1):ECHO,ph=c.ph;
-  ctx.fillStyle=cc;ctx.strokeStyle=cc;ctx.lineWidth=2;
-  if(c.type==='crawler'){
-    ctx.beginPath();ctx.ellipse(sx,sy,z,z*.6,0,0,7);ctx.fill();
-    for(let k=-1;k<=1;k++){const w=Math.sin(ph*12+k)*3;ctx.beginPath();ctx.moveTo(sx+k*z*.5,sy);ctx.lineTo(sx+k*z*.9-4,sy+z*.9+w);ctx.moveTo(sx+k*z*.5,sy);ctx.lineTo(sx+k*z*.9+4,sy+z*.9-w);ctx.stroke()}
-  }else if(c.type==='shrieker'){
-    const f=Math.sin(ph*18)*z*.7;
-    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx-z*2,sy-f);ctx.lineTo(sx-z*.8,sy+z*.4);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+z*2,sy-f);ctx.lineTo(sx+z*.8,sy+z*.4);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.arc(sx,sy,z*.55,0,7);ctx.fill();
-  }else if(c.type==='burrower'){
-    for(let k=3;k>=0;k--){const ox=Math.sin(ph*4-k)*z*.4;ctx.beginPath();ctx.arc(sx+ox-k*z*.2,sy+k*z*.55,z*(1-k*.15),0,7);ctx.fill()}
-  }else if(c.type==='stalker'){
-    ctx.beginPath();ctx.ellipse(sx,sy-z*.3,z*.6,z*1.1,0,0,7);ctx.fill();
-    const w=Math.sin(ph*7)*z*.5;
-    ctx.beginPath();ctx.moveTo(sx-z*.4,sy);ctx.lineTo(sx-z*1.3,sy+z*1.3+w);ctx.moveTo(sx+z*.4,sy);ctx.lineTo(sx+z*1.3,sy+z*1.3-w);
-    ctx.moveTo(sx-z*.5,sy-z*.6);ctx.lineTo(sx-z*1.6,sy-z*.1-w);ctx.moveTo(sx+z*.5,sy-z*.6);ctx.lineTo(sx+z*1.6,sy-z*.1+w);ctx.stroke();
-  }else{
-    ctx.beginPath();ctx.arc(sx,sy,z,0,7);ctx.fill();
-    ctx.globalAlpha*=.5;for(let k=1;k<=3;k++){ctx.beginPath();ctx.arc(sx,sy,z+k*6+Math.sin(ph*2+k)*3,0,7);ctx.stroke()}
+function endTactical(attWon,timeout,retreat){
+  const B=S.battle;B.over=true;
+  const surv=new Map();
+  for(const a of[...B.b.att,...B.b.def]){
+    const won=(B.b.att.includes(a))===attWon;
+    const u={inf:0,arch:0,cav:0,siege:0};let any=false;
+    for(const s of B.squads)if(s.army===a&&alive(s)>=4){u[s.type]++;any=true}
+    surv.set(a,(won||retreat&&a.owner===0)&&any?u:won&&a.units.scout?u:null);
   }
+  const won=(B.pSide==='A')===attWon;
+  const txt=retreat?'You sound the retreat. The survivors fall back.':timeout?'The attack stalls before the walls and the attackers withdraw.':won?'The field is yours.':'Your forces are broken.';
+  setTimeout(()=>{
+    S.battle=null;
+    for(const id of['bhead','bbar'])$('#'+id).classList.add('hide');
+    for(const id of['top','side','chron','bar'])$('#'+id).classList.remove('hide');
+    finishBattle(B.b,attWon,surv,retreat);S.pending=null;
+    showModal(`<h2>${won?'Victory':'Defeat'}</h2><p>${txt}</p><div class="row"><button class="primary" data-close>Return to the map</button></div>`);
+    refreshUI();
+  },retreat?50:900);
 }
-function drawPlayer(sx,sy){
-  const p=G.player,w=p.w*TS,h=p.h*TS,lit=G.light[idx(clamp(p.x|0,0,W-1),clamp((p.y-.5)|0,0,H-1))];
-  const a=Math.max(.55,Math.min(1,lit+.3));
-  if(p.inv>0&&Math.sin(G.t*40)>0)ctx.globalAlpha=.5;
-  ctx.fillStyle=shade([70,90,100],a);ctx.fillRect(sx-w/2,sy-h*.62,w,h*.62);
-  ctx.fillStyle=shade([215,165,95],a);ctx.fillRect(sx-w/2,sy-h,w,h*.4);
-  ctx.fillStyle=shade([230,200,80],a);ctx.fillRect(sx-w/2-1,sy-h-2,w+2,h*.14);
-  const on=G.lampOn&&p.energy>0;
-  ctx.fillStyle=on?'#fff1c2':'#555';ctx.fillRect(sx+(p.face>0?w*.15:-w*.15-4),sy-h*.93,4,4);
-  ctx.fillStyle='#000';ctx.fillRect(sx+(p.face>0?w*.08:-w*.22),sy-h*.78,3,3);
-  ctx.globalAlpha=1;
+function renderBattleBar(){
+  const B=S.battle;
+  $('#bbar').innerHTML=`<button data-b="all">Select all <span class="dim">Q</span></button><button data-b="charge">Charge <span class="dim">C</span></button><button data-b="hold">Hold <span class="dim">H</span></button>
+  <button data-b="line">Line <span class="dim">1</span></button><button data-b="wedge">Wedge <span class="dim">2</span></button><button data-b="block">Block <span class="dim">3</span></button>
+  <button data-b="pause" class="${B.paused?'on':''}">${B.paused?'Resume':'Pause'} <span class="dim">Space</span></button><button data-b="retreat" class="danger">Retreat</button>`;
 }
-function bar(x,y,w,v,col,label){
-  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(x,y,w,8);
-  ctx.fillStyle=col;ctx.fillRect(x,y,w*clamp(v,0,1),8);
-  ctx.fillStyle='#d6e2df';ctx.fillText(label,x,y-4);
+function battleCmd(c){
+  const B=S.battle;if(!B||B.over)return;
+  const mine=B.squads.filter(s=>s.side===B.pSide&&s.hp>0);
+  const sel=mine.filter(s=>B.sel.has(s));const tgt=sel.length?sel:mine;
+  if(c==='all'){B.sel=new Set(mine)}
+  else if(c==='charge'){for(const s of tgt){s.order='attack';s.hold=false;s.target=null}}
+  else if(c==='hold'){for(const s of tgt){s.order=null;s.hold=true;s.target=null;s.tx=s.x;s.ty=s.y}}
+  else if(c==='pause'){B.paused=!B.paused;renderBattleBar()}
+  else if(c==='retreat'){for(const s of mine)s.hp*=.6;endTactical(B.pSide!=='A',false,true)}
+  else if(['line','wedge','block'].includes(c))formation(tgt,c);
 }
-function hud(){
-  const p=G.player;ctx.save();ctx.textBaseline='alphabetic';
-  ctx.font='600 14px "Saira Semi Condensed",system-ui,sans-serif';
-  ctx.fillStyle='rgba(5,10,11,.72)';ctx.fillRect(10,10,250,152);
-  bar(22,40,226,p.hp/maxHP(),'#e5484d',`Health ${Math.ceil(Math.max(0,p.hp))} of ${maxHP()}`);
-  bar(22,74,226,p.energy/maxEN(),p.energy<12?'#ffbf69':'#6ff2dc',`Energy ${Math.floor(p.energy)} of ${maxEN()}  Lamp ${G.lampOn?'on':'off'}`);
-  // scanner modes
-  for(let k=0;k<3;k++){
-    const x=22+k*76,y=88,on=G.mode===k;
-    ctx.fillStyle=on?'#6ff2dc':'rgba(255,255,255,.06)';ctx.fillRect(x,y,72,22);
-    ctx.fillStyle=on?'#001a16':(p.energy>=MODES[k].cost?'#9fb3af':'#5b6866');
-    ctx.fillText(`${k+1} ${MODES[k].n}`,x+6,y+16);
-  }
-  ctx.fillStyle='#7f9692';ctx.fillText('Noise',22,130);
-  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(66,121,182,8);
-  const nl=clamp(G.noiseLvl/42,0,1);ctx.fillStyle=nl>.45?'#e5484d':nl>.18?'#ffbf69':'#6ff2dc';ctx.fillRect(66,121,182*nl,8);
-  ctx.fillStyle='#d6e2df';ctx.font='800 20px "Saira Semi Condensed",system-ui,sans-serif';
-  ctx.fillText(`${Math.max(0,Math.round((p.y-10)*1.5))} m`,22,152);
-  ctx.font='600 14px "Saira Semi Condensed",system-ui,sans-serif';ctx.fillStyle='#7f9692';
-  ctx.fillText(BANDS[bandAt(p.y)].name+(G.atStation?'   At a station, press C':''),80,151);
-  // minimap
-  if(mmDirty)updMinimap();
-  const mw=Math.min(150,VW*.2),sc=mw/W,mh=Math.min(220,VH*.4),rows=mh/sc;
-  const top=clamp(p.y-rows/2,0,H-rows),mx=VW-mw-12,my=12;
-  ctx.fillStyle='rgba(5,10,11,.8)';ctx.fillRect(mx-4,my-4,mw+8,mh+8);
-  ctx.imageSmoothingEnabled=false;ctx.drawImage(mm,0,top,W,rows,mx,my,mw,mh);
-  for(const s of G.stations){const yy=my+(s.y-top)*sc;if(yy>my&&yy<my+mh){ctx.fillStyle='#6ff2dc';ctx.fillRect(mx+s.x*sc-2,yy-2,4,4)}}
-  ctx.fillStyle='#ffbf69';ctx.fillRect(mx+p.x*sc-2,my+(p.y-1-top)*sc-2,4,4);
-  for(const[sy]of STRATA){const yy=my+(sy-top)*sc;if(yy>my&&yy<my+mh){ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(mx,yy,mw,1)}}
-  // hotbar
-  const slots=[...PLACE.map((k,i)=>({k,label:PLACE_N[k],n:G.items[k],sel:G.sel===i,key:i===0?'Q':''})),
-    {label:'Decoy',n:G.items.decoy,key:'G'},{label:'Stun',n:G.items.stun,key:'E'},{label:'Medkit',n:G.items.medkit,key:'R'}];
-  const sw=84,gap=6,tw=slots.length*sw+(slots.length-1)*gap,bx=(VW-tw)/2,by=VH-58;
-  slots.forEach((s,i)=>{
-    const x=bx+i*(sw+gap);
-    ctx.fillStyle=s.sel?'rgba(111,242,220,.18)':'rgba(5,10,11,.75)';ctx.fillRect(x,by,sw,44);
-    if(s.sel){ctx.strokeStyle='#6ff2dc';ctx.lineWidth=1;ctx.strokeRect(x+.5,by+.5,sw-1,43)}
-    if(i===3){ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(x-gap/2-1,by+6,1,32)}
-    ctx.fillStyle=s.n>0?'#d6e2df':'#5b6866';ctx.fillText(s.label,x+8,by+19);
-    ctx.font='800 16px "Saira Semi Condensed",system-ui,sans-serif';ctx.fillText(s.n,x+8,by+37);
-    ctx.font='600 12px "Saira Semi Condensed",system-ui,sans-serif';ctx.fillStyle='#ffbf69';if(s.key)ctx.fillText(s.key,x+sw-14,by+37);
-    ctx.font='600 14px "Saira Semi Condensed",system-ui,sans-serif';
+function formation(list,kind){
+  if(!list.length)return;const B=S.battle;
+  const cx=list.reduce((s,q)=>s+q.x,0)/list.length,cy=list.reduce((s,q)=>s+q.y,0)/list.length,dir=B.pSide==='A'?1:-1;
+  const order=[...list].sort((a,b)=>({inf:0,cav:1,arch:2,siege:3}[a.type]-{inf:0,cav:1,arch:2,siege:3}[b.type])||a.y-b.y);
+  order.forEach((s,i)=>{
+    let x=cx,y=cy;const n=order.length;
+    if(kind==='line'){y=cy+(i-(n-1)/2)*42;x=cx+(s.type==='arch'?-50:s.type==='siege'?-100:0)*dir}
+    else if(kind==='wedge'){const k=Math.ceil(i/2)*(i%2?1:-1);y=cy+k*38;x=cx-Math.abs(k)*30*dir}
+    else{const cols=Math.ceil(Math.sqrt(n));x=cx+((i/cols|0)-(Math.ceil(n/cols)-1)/2)*-40*dir;y=cy+(i%cols-(cols-1)/2)*40}
+    s.tx=clamp(x,20,BF.w-20);s.ty=clamp(y,20,BF.h-20);s.order='move';s.target=null;s.hold=false;
   });
-  // ore pack
-  let ox=bx,oy=by-16;ctx.font='600 13px "Saira Semi Condensed",system-ui,sans-serif';
-  ctx.fillStyle=bagCount()>=bagCap()?'#e5484d':'#7f9692';const packTxt=`Ore pack ${bagCount()} of ${bagCap()}`;ctx.fillText(packTxt,ox,oy);ox+=ctx.measureText(packTxt).width+14;
-  for(const k of[...ORES,'rubble']){if(!G.bag[k])continue;ctx.fillStyle=ORE_COL[k];const s=`${G.bag[k]} ${k}`;ctx.fillText(s,ox,oy);ox+=ctx.measureText(s).width+12}
-  // messages
-  ctx.font='600 16px "Saira Semi Condensed",system-ui,sans-serif';ctx.textAlign='center';
-  const live=G.msgs.filter(m=>G.t-m.at<5);
-  live.forEach((m,i)=>{const a=clamp(5-(G.t-m.at),0,1);ctx.globalAlpha=a;ctx.fillStyle='rgba(0,0,0,.6)';const w=ctx.measureText(m.t).width+20,yy=by-44-(live.length-1-i)*26;ctx.fillRect(VW/2-w/2,yy-17,w,24);ctx.fillStyle='#d6e2df';ctx.fillText(m.t,VW/2,yy)});
-  ctx.globalAlpha=1;ctx.textAlign='left';ctx.restore();
-}
-function updMinimap(){
-  mmDirty=false;const d=mmImg.data,T=G.tiles,S=G.seen;
-  for(let i=0;i<W*H;i++){
-    const o=i*4;if(!S[i]){d[o+3]=0;continue}
-    const t=T[i];let c;
-    if(t===AIR)c=[16,32,36];else if(t===LAVA)c=[220,80,20];else if(t===LADDER)c=[150,110,60];else if(t===HEART)c=[220,40,70];
-    else if(TD[t].ore)c=TD[t].ore;else c=[60,98,106];
-    d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255;
-  }
-  mmc.putImageData(mmImg,0,0);
 }
 
-// ================= crafting UI =================
-function costHTML(cost){return Object.entries(cost).map(([k,v])=>`<span class="c-${k}${G.store[k]<v?' no':''}">${v} ${k}</span>`).join(', ')}
-const canAfford=c=>Object.entries(c).every(([k,v])=>G.store[k]>=v);
-function pay(c){for(const[k,v]of Object.entries(c))G.store[k]-=v}
-function openCraft(){
-  if(!G.atStation){deny('Crafting needs a station. Stand next to one and press C.');return}
-  renderCraft();show('craft',true);
-}
-function closeCraft(){show('craft',false)}
-function renderCraft(){
-  let h=`<div class="row" style="justify-content:space-between"><h2>Station</h2><button id="closeCraft">Close</button></div>
-  <div class="store">${['copper','iron','quartz','cobalt','rubble'].map(k=>`<span class="c-${k}"><b>${G.store[k]}</b> ${k}</span>`).join('')}</div>
-  <div class="sect">Upgrades</div>`;
-  for(const[id,u]of Object.entries(LV)){
-    const l=G.lvl[id],maxed=l>=u.max,c=maxed?null:u.cost[l+1];
-    h+=`<div class="recipe"><div><span class="name">${u.n}</span><span class="lv">${['','I','II','III','IV','V'][l]}</span>
-      <div class="eff">${maxed?u.eff(l):'Next: '+u.eff(l+1)}</div>${maxed?'':`<div class="cost">${costHTML(c)}</div>`}</div>
-      <button data-up="${id}" ${maxed||!canAfford(c)?'disabled':''}>${maxed?'Maxed':'Upgrade'}</button></div>`;
+// ====================================================== canvas & input
+const cv=$('#c'),ctx=cv.getContext('2d');let VW=800,VH=600,DPR=1;
+function resize(){DPR=Math.min(2,devicePixelRatio||1);VW=innerWidth;VH=innerHeight;cv.width=VW*DPR;cv.height=VH*DPR;cv.style.width=VW+'px';cv.style.height=VH+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize);resize();
+const keys={};const mouse={x:0,y:0,down:false,dragging:false,sx:0,sy:0,btn:0};
+const toWorld=(sx,sy)=>({x:(sx-VW/2)/S.cam.z+S.cam.x,y:(sy-VH/2)/S.cam.z+S.cam.y});
+const toScreen=(x,y)=>({x:(x-S.cam.x)*S.cam.z+VW/2,y:(y-S.cam.y)*S.cam.z+VH/2});
+function bfTransform(){const sc=Math.min(VW/BF.w,(VH-130)/BF.h);return{sc,ox:(VW-BF.w*sc)/2,oy:70+(VH-130-BF.h*sc)/2}}
+const anyModal=()=>!!document.querySelector('.ov.on');
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  const k=e.key.toLowerCase();keys[k]=true;
+  if(!S)return;
+  if(k==='escape'){
+    if($('#modal').classList.contains('on')&&$('#modal [data-close]')){hideModal();return}
+    for(const id of['techOv','dipOv','vicOv'])if($('#'+id).classList.contains('on')){$('#'+id).classList.remove('on');return}
+    S.tool=null;S.sel=null;refreshUI();return;
   }
-  h+=`<div class="sect">Supplies</div>`;
-  RECIPES.forEach((r,i)=>{
-    h+=`<div class="recipe"><div><span class="name">${r.n}${r.give>1?' ×'+r.give:''}</span><span class="lv">have ${G.items[r.id]}</span>
-      <div class="eff">${r.eff}</div><div class="cost">${costHTML(r.cost)}</div></div>
-      <button data-rc="${i}" ${canAfford(r.cost)?'':'disabled'}>Craft</button></div>`;
-  });
-  $('#craftCard').innerHTML=h;
-}
-$('#craftCard').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  if(b.id==='closeCraft'){closeCraft();return}
-  if(b.dataset.up){const id=b.dataset.up,c=LV[id].cost[G.lvl[id]+1];if(!canAfford(c))return;pay(c);G.lvl[id]++;
-    if(id==='armor')G.player.hp=maxHP();if(id==='batt')G.player.energy=maxEN();sfx.craft();msg(`${LV[id].n} upgraded`)}
-  if(b.dataset.rc){const r=RECIPES[+b.dataset.rc];if(!canAfford(r.cost))return;pay(r.cost);G.items[r.id]+=r.give;sfx.craft()}
-  renderCraft();
-  const again=b.dataset.up?$(`[data-up="${b.dataset.up}"]`):$(`[data-rc="${b.dataset.rc}"]`);if(again&&!again.disabled)again.focus();
+  if(S.battle){
+    const m={q:'all',c:'charge',h:'hold','1':'line','2':'wedge','3':'block',' ':'pause'};
+    if(m[k]){battleCmd(m[k]);e.preventDefault()}
+    return;
+  }
+  if(anyModal())return;
+  if(k===' '){S.paused=!S.paused;renderTop();e.preventDefault()}
+  else if(k==='t')openTech();else if(k==='g')openDip();else if(k==='v')openVic();
 });
-
-// ================= screens =================
-function gameOver(won){
-  G.over=true;mouse.down=false;
-  const s=G.stats,mins=Math.floor(G.t/60),secs=Math.floor(G.t%60);
-  $('#endTitle').textContent=won?'You reached the heart':'Signal lost';
-  $('#endText').textContent=won
-    ?'At the bottom of the hollow the rock gives way to something that beats. Every pulse you sent down here was answered by it. You put your hand on it, and for the first time the cave goes quiet.'
-    :'Nobody heard the last pulse except the things that were already listening. The caves will be different next time.';
-  $('#endStats').innerHTML=[['Deepest point',`${Math.max(0,Math.round((s.maxDepth-10)*1.5))} m`],['Time',`${mins}:${String(secs).padStart(2,'0')}`],['Ore mined',s.ore],['Pulses sent',s.pulses],['Creatures killed',s.kills],['Recalls used',s.recalls],['Seed',G.seed]]
-    .map(([a,b])=>`<span class="dim">${a}</span><span>${b}</span>`).join('');
-  if(won)sfx.win();
-  setTimeout(()=>show('end',true),won?400:900);
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('mousedown',e=>{mouse.down=true;mouse.btn=e.button;mouse.sx=mouse.x=e.clientX;mouse.sy=mouse.y=e.clientY;mouse.dragging=false;
+  if(S&&S.battle&&e.button===0){const B=S.battle,T=bfTransform();B.drag={x0:(e.clientX-T.ox)/T.sc,y0:(e.clientY-T.oy)/T.sc,x1:(e.clientX-T.ox)/T.sc,y1:(e.clientY-T.oy)/T.sc}}});
+addEventListener('mousemove',e=>{
+  const dx=e.clientX-mouse.x,dy=e.clientY-mouse.y;mouse.x=e.clientX;mouse.y=e.clientY;
+  if(!S||!mouse.down)return;
+  if(Math.hypot(mouse.x-mouse.sx,mouse.y-mouse.sy)>5)mouse.dragging=true;
+  if(S.battle){if(S.battle.drag){const T=bfTransform();S.battle.drag.x1=(e.clientX-T.ox)/T.sc;S.battle.drag.y1=(e.clientY-T.oy)/T.sc}return}
+  if(mouse.dragging&&(mouse.btn===0&&!S.tool||mouse.btn===1)){S.cam.x-=dx/S.cam.z;S.cam.y-=dy/S.cam.z}
+});
+addEventListener('mouseup',e=>{
+  if(!mouse.down)return;mouse.down=false;
+  if(!S||e.target!==cv&&!mouse.dragging)return;
+  if(S.battle){battleClick(e);return}
+  if(mouse.dragging&&e.button===0&&!S.tool)return;
+  const w=toWorld(e.clientX,e.clientY),tx=Math.floor(w.x),ty=Math.floor(w.y);
+  if(!inb(tx,ty))return;
+  if(e.button===2)rightClick(tx,ty);else if(e.button===0)leftClick(tx,ty,w);
+});
+cv.addEventListener('wheel',e=>{if(!S||S.battle)return;const before=toWorld(e.clientX,e.clientY);S.cam.z=clamp(S.cam.z*(e.deltaY>0?.88:1.13),12,64);const after=toWorld(e.clientX,e.clientY);S.cam.x+=before.x-after.x;S.cam.y+=before.y-after.y;e.preventDefault()},{passive:false});
+function leftClick(tx,ty,w){
+  const P=S.kingdoms[0];
+  if(S.tool){
+    if(S.tool==='found'){
+      const err=canFoundAt(P,tx,ty);if(err)return toast(err);
+      if(!canPay(P,FOUND_COST))return toast('Not enough resources to found a city');
+      if(P.pop<16)return toast('You need at least 16 population to send out settlers');
+      pay(P,FOUND_COST);P.pop-=8;const c=foundCity(P,tx,ty);S.tool=null;S.sel={kind:'city',id:c.id};econRecalc(P);refreshUI();return;
+    }
+    const err=canBuild(P,S.tool,tx,ty);if(err)return toast(err);
+    build(P,S.tool,tx,ty);if(!keys.shift)S.tool=null;refreshUI();return;
+  }
+  // armies take priority when clicked
+  let best=null,bd=.55;
+  for(const a of S.armies){if(!S.visible[idx(Math.floor(a.x),Math.floor(a.y))])continue;const d=Math.hypot(a.x-w.x,a.y-w.y);if(d<bd){bd=d;best=a}}
+  if(best)S.sel={kind:'army',id:best.id};
+  else{const c=cityAt(tx,ty);if(c&&S.explored[idx(tx,ty)])S.sel={kind:'city',id:c.id};else S.sel={kind:'tile',x:tx,y:ty}}
+  refreshUI();
 }
-function start(seed){
-  ac();if(document.activeElement)document.activeElement.blur();newGame(seed);
-  for(const id of['title','end','pause','craft'])$('#'+id).classList.remove('on');
-
+function rightClick(tx,ty){
+  if(S.tool){S.tool=null;refreshUI();return}
+  const a=S.sel&&S.sel.kind==='army'&&S.armies.find(x=>x.id===S.sel.id);
+  if(!a||a.owner!==0)return;
+  if(S.ter[idx(tx,ty)]===WATER)return toast('Armies can\'t cross water');
+  const c=cityAt(tx,ty);
+  if(c&&c.owner!==0&&!atWar(0,c.owner))return toast(`You're not at war with ${S.kingdoms[c.owner].name}`);
+  a.explore=false;if(!orderMove(a,tx,ty))toast('No path there');
+  refreshUI();
 }
-$('#startBtn').onclick=()=>start(seedFrom($('#seedIn').value.trim()));
-$('#seedIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#startBtn').click()});
-$('#againBtn').onclick=()=>start(seedFrom(''));
-$('#retryBtn').onclick=()=>start(G.seed);
-$('#resumeBtn').onclick=()=>show('pause',false);
-$('#quitBtn').onclick=()=>{show('pause',false);gameOver(false)};
-$('#startBtn').focus();
+function battleClick(e){
+  const B=S.battle,T=bfTransform(),bx=(e.clientX-T.ox)/T.sc,by=(e.clientY-T.oy)/T.sc;
+  const mine=B.squads.filter(s=>s.side===B.pSide&&s.hp>0);
+  const hit=B.squads.find(s=>s.hp>0&&Math.hypot(s.x-bx,s.y-by)<22);
+  if(e.button===0){
+    const d=B.drag;B.drag=null;
+    if(d&&Math.hypot(d.x1-d.x0,d.y1-d.y0)>8){
+      const x0=Math.min(d.x0,d.x1),x1=Math.max(d.x0,d.x1),y0=Math.min(d.y0,d.y1),y1=Math.max(d.y0,d.y1);
+      if(!keys.shift)B.sel.clear();for(const s of mine)if(s.x>=x0&&s.x<=x1&&s.y>=y0&&s.y<=y1)B.sel.add(s);return;
+    }
+    if(hit&&hit.side===B.pSide){if(!keys.shift)B.sel.clear();B.sel.has(hit)&&keys.shift?B.sel.delete(hit):B.sel.add(hit)}
+    else if(!keys.shift)B.sel.clear();
+  }else if(e.button===2){
+    const sel=mine.filter(s=>B.sel.has(s));if(!sel.length)return;
+    const wall=B.walls.find(w=>w.hp>0&&bx>=w.x-6&&bx<=w.x+w.w+6&&by>=w.y&&by<w.y+w.h);
+    if(hit&&hit.side!==B.pSide){for(const s of sel){s.target=hit;s.order='attack';s.hold=false}}
+    else if(wall&&B.pSide==='A'){for(const s of sel){s.target=wall;s.order='attack';s.hold=false}}
+    else{
+      const cx=sel.reduce((a,s)=>a+s.x,0)/sel.length,cy=sel.reduce((a,s)=>a+s.y,0)/sel.length;
+      for(const s of sel){s.tx=clamp(bx+(s.x-cx),15,BF.w-15);s.ty=clamp(by+(s.y-cy),15,BF.h-15);s.order='move';s.target=null;s.hold=false}
+    }
+  }
+}
 
-// ================= loop =================
-let last=performance.now();
+// ====================================================== map rendering
+const rgb=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function renderMap(){
+  const z=S.cam.z;
+  ctx.fillStyle='#0b120e';ctx.fillRect(0,0,VW,VH);
+  const tl=toWorld(0,0),br=toWorld(VW,VH);
+  const x0=Math.max(0,Math.floor(tl.x)),y0=Math.max(0,Math.floor(tl.y)),x1=Math.min(MW-1,Math.floor(br.x)),y1=Math.min(MH-1,Math.floor(br.y));
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=idx(x,y),s=toScreen(x,y),sx=Math.floor(s.x),sy=Math.floor(s.y),zz=Math.ceil(z)+1;
+    if(!S.explored[i]){ctx.fillStyle=(x+y)%2?'#121b15':'#111a14';ctx.fillRect(sx,sy,zz,zz);continue}
+    const t=S.ter[i],h=hash2(x,y),c=TER[t].col,v=.92+h*.12;
+    ctx.fillStyle=`rgb(${c[0]*v|0},${c[1]*v|0},${c[2]*v|0})`;ctx.fillRect(sx,sy,zz,zz);
+    drawTerrainMark(t,sx,sy,z,h);
+    const o=S.owner[i];
+    if(o>=0){ctx.fillStyle=rgb(S.kingdoms[o].color,.22);ctx.fillRect(sx,sy,zz,zz)}
+    if(S.dep[i]&&z>=18)drawDeposit(S.dep[i],sx,sy,z);
+    const b=S.bld[i];if(b)drawBuilding(b.type,sx,sy,z,o<0);
+    if(!S.visible[i]){ctx.fillStyle='rgba(8,12,10,.38)';ctx.fillRect(sx,sy,zz,zz)}
+  }
+  // borders
+  ctx.lineWidth=Math.max(2,z*.09);
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=idx(x,y),o=S.owner[i];if(o<0||!S.explored[i])continue;
+    const s=toScreen(x,y);ctx.strokeStyle=rgb(S.kingdoms[o].color,.95);ctx.beginPath();
+    if(x+1>=MW||S.owner[i+1]!==o){ctx.moveTo(s.x+z,s.y);ctx.lineTo(s.x+z,s.y+z)}
+    if(x-1<0||S.owner[i-1]!==o){ctx.moveTo(s.x,s.y);ctx.lineTo(s.x,s.y+z)}
+    if(y+1>=MH||S.owner[i+MW]!==o){ctx.moveTo(s.x,s.y+z);ctx.lineTo(s.x+z,s.y+z)}
+    if(y-1<0||S.owner[i-MW]!==o){ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+z,s.y)}
+    ctx.stroke();
+  }
+  // tool preview
+  if(S.tool&&!mouse.dragging){
+    const w=toWorld(mouse.x,mouse.y),tx=Math.floor(w.x),ty=Math.floor(w.y);
+    if(inb(tx,ty)){const P=S.kingdoms[0],err=S.tool==='found'?canFoundAt(P,tx,ty):canBuild(P,S.tool,tx,ty),s=toScreen(tx,ty);
+      ctx.strokeStyle=err?'#c8463c':'#f1d27a';ctx.lineWidth=2;ctx.strokeRect(s.x+1,s.y+1,z-2,z-2);
+      if(S.tool==='found'&&!err){ctx.strokeStyle='rgba(241,210,122,.5)';ctx.beginPath();ctx.arc(s.x+z/2,s.y+z/2,2.5*z,0,7);ctx.stroke()}}
+  }
+  // selection
+  if(S.sel){
+    let sx,sy;if(S.sel.kind==='tile'){sx=S.sel.x;sy=S.sel.y}else if(S.sel.kind==='city'){const c=cityById(S.sel.id);if(c){sx=c.x;sy=c.y}}
+    if(sx!==undefined){const s=toScreen(sx,sy);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(s.x+1,s.y+1,z-2,z-2)}
+  }
+  // cities
+  for(const c of S.cities){
+    if(!S.explored[idx(c.x,c.y)])continue;
+    const s=toScreen(c.x,c.y);if(s.x<-80||s.y<-80||s.x>VW+80||s.y>VH+80)continue;
+    drawCity(c,s.x,s.y,z);
+  }
+  // armies
+  for(const a of S.armies){
+    const i=idx(Math.floor(a.x),Math.floor(a.y));if(!S.visible[i])continue;
+    const s=toScreen(a.x,a.y);if(s.x<-40||s.y<-40||s.x>VW+40||s.y>VH+40)continue;
+    const sel=S.sel&&S.sel.kind==='army'&&S.sel.id===a.id;
+    if(a.owner===0&&a.path.length&&(sel||a.path.length<40)){
+      ctx.strokeStyle=sel?'rgba(255,255,255,.75)':'rgba(255,255,255,.25)';ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(s.x,s.y);
+      for(const[px,py]of a.path){const q=toScreen(px+.5,py+.5);ctx.lineTo(q.x,q.y)}ctx.stroke();ctx.setLineDash([]);
+    }
+    drawArmy(a,s.x,s.y,z,sel);
+  }
+}
+function drawTerrainMark(t,sx,sy,z,h){
+  if(z<14)return;
+  if(t===FOREST){ctx.fillStyle='rgba(30,58,30,.75)';for(let k=0;k<2;k++){const ox=sx+z*(.25+k*.4+h*.1),oy=sy+z*(.3+((h*7+k*.5)%1)*.35);ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox-z*.16,oy+z*.32);ctx.lineTo(ox+z*.16,oy+z*.32);ctx.fill()}}
+  else if(t===HILLS){ctx.strokeStyle='rgba(90,72,40,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sx+z*.4,sy+z*.72,z*.24,Math.PI,0);ctx.stroke()}
+  else if(t===MOUNT){ctx.fillStyle='rgba(70,66,64,.85)';ctx.beginPath();ctx.moveTo(sx+z*.12,sy+z*.85);ctx.lineTo(sx+z*.5,sy+z*.15);ctx.lineTo(sx+z*.88,sy+z*.85);ctx.fill();ctx.fillStyle='rgba(236,236,236,.8)';ctx.beginPath();ctx.moveTo(sx+z*.4,sy+z*.33);ctx.lineTo(sx+z*.5,sy+z*.15);ctx.lineTo(sx+z*.6,sy+z*.33);ctx.fill()}
+  else if(t===WATER&&h>.7){ctx.strokeStyle='rgba(180,210,230,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sx+z*.2,sy+z*.5);ctx.quadraticCurveTo(sx+z*.4,sy+z*.38,sx+z*.6,sy+z*.5);ctx.stroke()}
+}
+function drawDeposit(d,sx,sy,z){
+  const cx=sx+z*.8,cy=sy+z*.2,r=z*.1;
+  if(d===3){ctx.strokeStyle='rgba(240,220,120,.9)';ctx.lineWidth=1;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(cx-r+k*r,cy+r);ctx.lineTo(cx-r+k*r,cy-r);ctx.stroke()}return}
+  ctx.fillStyle=d===1?'#c9cbd1':'#f2c94c';ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx,cy-r*1.4);ctx.lineTo(cx+r,cy);ctx.lineTo(cx,cy+r*1.4);ctx.lineTo(cx-r,cy);ctx.closePath();ctx.fill();ctx.stroke();
+}
+function drawBuilding(t,sx,sy,z,inactive){
+  const u=z/10;ctx.save();if(inactive)ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.55)';
+  if(t==='house'){ctx.fillStyle='#d9c6a0';ctx.fillRect(sx+3*u,sy+5*u,4*u,3.5*u);ctx.fillStyle='#8d3b2c';ctx.beginPath();ctx.moveTo(sx+2.3*u,sy+5*u);ctx.lineTo(sx+5*u,sy+2.4*u);ctx.lineTo(sx+7.7*u,sy+5*u);ctx.fill()}
+  else if(t==='farm'){ctx.fillStyle='#d8b553';ctx.fillRect(sx+1.5*u,sy+2*u,7*u,6.5*u);ctx.strokeStyle='#9c7b2a';for(let k=0;k<4;k++){ctx.beginPath();ctx.moveTo(sx+1.5*u,sy+(3+k*1.6)*u);ctx.lineTo(sx+8.5*u,sy+(3+k*1.6)*u);ctx.stroke()}}
+  else if(t==='lumber'){ctx.fillStyle='#7a4f2a';for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(sx+(3+k*2)*u,sy+7*u,1.1*u,1.1*u,0,0,7);ctx.fill();ctx.stroke()}ctx.fillStyle='#b8874f';ctx.fillRect(sx+3*u,sy+4*u,4*u,1.3*u)}
+  else if(t==='quarry'){ctx.fillStyle='#b9b4ac';ctx.fillRect(sx+2*u,sy+5*u,3*u,3*u);ctx.strokeRect(sx+2*u,sy+5*u,3*u,3*u);ctx.fillRect(sx+5.2*u,sy+5.8*u,2.5*u,2.2*u);ctx.strokeRect(sx+5.2*u,sy+5.8*u,2.5*u,2.2*u)}
+  else if(t==='mine'||t==='goldmine'){ctx.fillStyle='#3a2f28';ctx.beginPath();ctx.arc(sx+5*u,sy+7.5*u,2.6*u,Math.PI,0);ctx.fill();ctx.fillStyle=t==='mine'?'#c9cbd1':'#f2c94c';ctx.fillRect(sx+6.5*u,sy+7*u,2*u,1.4*u)}
+  else if(t==='market'){ctx.fillStyle='#efe6d2';ctx.fillRect(sx+2*u,sy+4*u,6*u,4*u);ctx.fillStyle='#b8402f';for(let k=0;k<3;k++)ctx.fillRect(sx+(2+k*2)*u,sy+3*u,1*u,2*u);ctx.fillRect(sx+2*u,sy+3*u,6*u,.8*u)}
+  else if(t==='library'){ctx.fillStyle='#cfc6b4';ctx.fillRect(sx+2.5*u,sy+4*u,5*u,4.5*u);ctx.fillStyle='#3d5f8f';ctx.beginPath();ctx.moveTo(sx+2*u,sy+4*u);ctx.lineTo(sx+5*u,sy+2*u);ctx.lineTo(sx+8*u,sy+4*u);ctx.fill();ctx.fillStyle='#3d5f8f';ctx.fillRect(sx+4.4*u,sy+5.5*u,1.2*u,3*u)}
+  else if(t==='barracks'){ctx.fillStyle='#8a7b66';ctx.fillRect(sx+2*u,sy+5*u,6*u,3.5*u);ctx.strokeRect(sx+2*u,sy+5*u,6*u,3.5*u);ctx.fillStyle='#5b4a3a';ctx.fillRect(sx+7*u,sy+1.5*u,.6*u,3.5*u);ctx.fillStyle='#b8402f';ctx.fillRect(sx+7.6*u,sy+1.5*u,1.8*u,1.2*u)}
+  ctx.restore();
+}
+function drawCity(c,sx,sy,z){
+  const K=S.kingdoms[c.owner],u=z/10,col=K.color;
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(sx+1*u,sy+8*u,8*u,1.5*u);
+  const towers=c.level+1;
+  ctx.fillStyle='#d8cfbd';ctx.strokeStyle='#3b342b';ctx.lineWidth=1;
+  ctx.fillRect(sx+1.5*u,sy+4.5*u,7*u,4*u);ctx.strokeRect(sx+1.5*u,sy+4.5*u,7*u,4*u);
+  for(let k=0;k<towers;k++){const tx=sx+(1.5+k*(5.6/(towers-1||1)))*u;ctx.fillStyle='#e6dccb';ctx.fillRect(tx-.2*u,sy+(c.level===3?1.5:2.8)*u,1.6*u,6*u);ctx.strokeRect(tx-.2*u,sy+(c.level===3?1.5:2.8)*u,1.6*u,6*u)}
+  ctx.fillStyle='#3b342b';ctx.fillRect(sx+4.2*u,sy+6.2*u,1.6*u,2.3*u);
+  if(c.walls){ctx.strokeStyle='#5c544a';ctx.lineWidth=Math.max(1.5,u*.5);ctx.strokeRect(sx+.6*u,sy+3.8*u,8.8*u,5.4*u)}
+  ctx.fillStyle=rgb(col);ctx.fillRect(sx+5*u,sy+.2*u,2.6*u,1.6*u);ctx.fillStyle='#3b342b';ctx.fillRect(sx+4.8*u,sy+.2*u,.4*u,4.3*u);
+  if(z>=16){
+    const label=c.name+(c.capital?' ★':'');
+    ctx.font=`700 ${clamp(z*.42,11,16)}px "Alegreya Sans",sans-serif`;const w=ctx.measureText(label).width;
+    ctx.fillStyle='rgba(12,18,14,.78)';ctx.fillRect(sx+z/2-w/2-5,sy+z+1,w+10,clamp(z*.42,11,16)+6);
+    ctx.fillStyle=rgb(col.map(v=>Math.min(255,v+70)));ctx.textAlign='center';ctx.fillText(label,sx+z/2,sy+z+clamp(z*.42,11,16)+2);ctx.textAlign='left';
+  }
+}
+function drawArmy(a,sx,sy,z,sel){
+  const K=S.kingdoms[a.owner],n=armySize(a),u=Math.max(z/10,1.6);
+  if(!n&&a.units.scout){ctx.fillStyle=rgb(K.color);ctx.strokeStyle='#111';ctx.lineWidth=1;ctx.beginPath();ctx.arc(sx,sy-u,u*1.8,0,7);ctx.fill();ctx.stroke();if(sel){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx,sy-u,u*2.8,0,7);ctx.stroke()}return}
+  ctx.fillStyle='#3b342b';ctx.fillRect(sx-u*2.4,sy-u*6,u*.5,u*6.4);
+  ctx.fillStyle=rgb(K.color);ctx.strokeStyle=sel?'#fff':'#111';ctx.lineWidth=sel?2:1;
+  ctx.beginPath();ctx.moveTo(sx-u*1.9,sy-u*6);ctx.lineTo(sx+u*3.6,sy-u*6);ctx.lineTo(sx+u*3,sy-u*4.3);ctx.lineTo(sx+u*3.6,sy-u*2.6);ctx.lineTo(sx-u*1.9,sy-u*2.6);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.font=`700 ${clamp(u*2.6,10,15)}px "Alegreya Sans",sans-serif`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(n,sx+u*.8,sy-u*3.3);ctx.textAlign='left';
+}
+
+// ====================================================== battle rendering
+function renderBattle(){
+  const B=S.battle,T=bfTransform();
+  ctx.fillStyle='#0b120e';ctx.fillRect(0,0,VW,VH);
+  ctx.save();ctx.translate(T.ox,T.oy);ctx.scale(T.sc,T.sc);
+  ctx.fillStyle='#6f8a48';ctx.fillRect(0,0,BF.w,BF.h);
+  for(let k=0;k<160;k++){const x=hash2(k,1)*BF.w,y=hash2(k,2)*BF.h;ctx.fillStyle=k%3?'rgba(60,86,40,.35)':'rgba(150,170,90,.25)';ctx.fillRect(x,y,10+hash2(k,3)*26,3)}
+  if(B.walls.length){ctx.fillStyle='rgba(120,100,70,.25)';ctx.fillRect(WALL_X+18,0,BF.w-WALL_X,BF.h)}
+  for(const w of B.walls){
+    if(w.hp<=0){ctx.fillStyle='rgba(90,80,70,.6)';for(let k=0;k<5;k++)ctx.fillRect(w.x+hash2(k,w.y)*w.w,w.y+hash2(w.y,k)*w.h,6,6);continue}
+    ctx.fillStyle=w.gate?'#6b4a2b':'#8b8378';ctx.fillRect(w.x,w.y+1,w.w,w.h-2);
+    ctx.fillStyle='#5f594f';for(let y=w.y+4;y<w.y+w.h-4;y+=10)ctx.fillRect(w.x-3,y,4,5);
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(w.x,w.y+w.h-5,w.w,3);ctx.fillStyle='#d2a64a';ctx.fillRect(w.x,w.y+w.h-5,w.w*w.hp/w.max,3);
+  }
+  for(const s of B.squads){
+    if(s.hp<=0)continue;
+    const K=bOwner(B,s.side),n=alive(s),col=s.flash>0?[255,240,220]:K.color,dir=s.side==='A'?1:-1;
+    if(B.sel.has(s)){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(s.x,s.y,24,20,0,0,7);ctx.stroke()}
+    for(let k=0;k<n;k++){
+      const cxk=k%4,cyk=(k/4)|0,ox=(cyk-1)*-7*dir,oy=(cxk-1.5)*8;
+      const x=s.x+ox,y=s.y+oy;ctx.fillStyle=rgb(col);ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=1;
+      if(s.type==='inf'){ctx.fillRect(x-3,y-3,6,6);ctx.strokeRect(x-3,y-3,6,6)}
+      else if(s.type==='arch'){ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill();ctx.stroke()}
+      else if(s.type==='cav'){ctx.beginPath();ctx.moveTo(x+5*dir,y);ctx.lineTo(x-4*dir,y-4);ctx.lineTo(x-4*dir,y+4);ctx.closePath();ctx.fill();ctx.stroke()}
+      else if(s.type==='siege'&&k<3){ctx.fillStyle='#6b4a2b';ctx.fillRect(s.x-12+k*0,s.y-7+k*0,24,14);ctx.strokeRect(s.x-12,s.y-7,24,14);ctx.fillStyle=rgb(col);ctx.fillRect(s.x-3,s.y-14,6,10);break}
+    }
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(s.x-14,s.y+18,28,3);ctx.fillStyle=s.side===B.pSide?'#7fbf6a':'#c8463c';ctx.fillRect(s.x-14,s.y+18,28*s.hp/s.max,3);
+    if(s.side===B.pSide&&s.order==='move'&&B.sel.has(s)){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke();ctx.setLineDash([])}
+  }
+  for(const sh of B.shots){const x=sh.x0+(sh.x1-sh.x0)*sh.t,y=sh.y0+(sh.y1-sh.y0)*sh.t-Math.sin(sh.t*Math.PI)*(sh.big?60:30);
+    if(sh.big){ctx.fillStyle='#3b342b';ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill()}else{ctx.strokeStyle='#2b241c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-(sh.x1-sh.x0)*.02,y-(sh.y1-sh.y0)*.02-3);ctx.stroke()}}
+  ctx.font='700 18px "Alegreya SC",serif';ctx.textAlign='center';
+  for(const f of B.float){ctx.fillStyle=`rgba(255,240,200,${Math.min(1,f.t)})`;ctx.fillText(f.text,f.x,f.y-(2-f.t)*14)}
+  ctx.textAlign='left';
+  if(B.drag&&Math.hypot(B.drag.x1-B.drag.x0,B.drag.y1-B.drag.y0)>8){ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.strokeRect(B.drag.x0,B.drag.y0,B.drag.x1-B.drag.x0,B.drag.y1-B.drag.y0)}
+  ctx.restore();
+  // side counts
+  const cnt=side=>B.squads.filter(s=>s.side===side&&s.hp>0).length;
+  ctx.font='600 15px "Alegreya Sans",sans-serif';ctx.fillStyle='#ece4cf';
+  ctx.fillText(`${dispName(bOwner(B,'A'))}: ${cnt('A')} companies`,T.ox,T.oy-8);
+  ctx.textAlign='right';ctx.fillText(`${dispName(bOwner(B,'D'))}: ${cnt('D')} companies`,T.ox+BF.w*T.sc,T.oy-8);ctx.textAlign='left';
+  if(B.paused){ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,VW,VH);ctx.fillStyle='#ece4cf';ctx.font='800 34px "Alegreya SC",serif';ctx.textAlign='center';ctx.fillText('Paused',VW/2,VH/2);ctx.textAlign='left'}
+}
+
+// ====================================================== UI panels
+function costHTML(K,c){return Object.entries(c).map(([k,v])=>`<span class="${K.res[k]<v?'no':''}">${v} ${k}</span>`).join(', ')}
+function renderTop(){
+  if(!S)return;const P=S.kingdoms[0];
+  let h='';
+  for(const k of RES){const r=P.rate[k];h+=`<div class="res"><span class="lab">${RES_N[k]}</span><b>${fmt(P.res[k])}</b><small class="${r<0?'neg':''}">${fmtRate(r)}</small></div>`}
+  h+=`<div class="res"><span class="lab">Population</span><b>${Math.floor(P.pop)}<span class="dim" style="font-weight:400">/${P.popCap}</span></b><small>${Math.round(P.soldiers)} soldiers, ${Math.round(P.workRatio*100)}% jobs filled</small></div>`;
+  h+=`<div class="res"><span class="lab">Research</span><b style="font-size:14px">${P.research?TECHS[P.research.id].n:'Nothing'}</b><small>${P.research?Math.floor(P.research.p/TECHS[P.research.id].cost*100)+'%':'Press T to pick'}</small></div>`;
+  h+=`<div class="sp"></div><div class="res"><span class="lab">Age of</span><b>${['','Settlement','Expansion','Empire'][P.era]}</b><small>Year ${yearOf(S.t)}</small></div>`;
+  h+=`<div class="grp"><button data-sp="0" class="${S.paused?'on':''}">Pause</button>${[1,2,4].map(s=>`<button data-sp="${s}" class="${!S.paused&&S.speed===s?'on':''}">${s}×</button>`).join('')}</div>`;
+  h+=`<div class="grp"><button data-open="tech">Research <span class="dim">T</span></button><button data-open="dip">Realms <span class="dim">G</span></button><button data-open="vic">Victory <span class="dim">V</span></button></div>`;
+  $('#top').innerHTML=h;
+}
+$('#top').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.sp!==undefined){const s=+b.dataset.sp;if(s===0)S.paused=!S.paused;else{S.paused=false;S.speed=s}renderTop()}
+  if(b.dataset.open==='tech')openTech();if(b.dataset.open==='dip')openDip();if(b.dataset.open==='vic')openVic()});
+function renderBar(){
+  const P=S.kingdoms[0];let h='';
+  for(const t of BLD_ORDER){const b=BLD[t],c=scaledCost(P,b.cost),locked=b.tech&&!P.techs.has(b.tech);
+    h+=`<button data-tool="${t}" class="${S.tool===t?'on':''}" ${locked?'disabled':''} title="${b.d}${locked?' (needs '+TECHS[b.tech].n+')':''}">${b.n}<small>${Object.entries(c).map(([k,v])=>v+' '+k).join(', ')}</small></button>`}
+  h+=`<button data-tool="found" class="${S.tool==='found'?'on':''}" title="Found a new city within 10 tiles of your own">Found city<small>60 food, 70 wood, 40 gold, 8 people</small></button>`;
+  $('#bar').innerHTML=h;
+}
+$('#bar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;S.tool=S.tool===b.dataset.tool?null:b.dataset.tool;renderBar();renderSide()});
+function renderSide(){
+  const P=S.kingdoms[0],el=$('#side');let h='';
+  if(S.tool){const b=BLD[S.tool];h=`<h3 style="margin-top:0">${S.tool==='found'?'Found a city':'Build '+b.n}</h3><p>${S.tool==='found'?'Click an explored tile at least 5 tiles from any city and within 10 tiles of one of yours. The new city claims the land around it.':b.d}</p><p class="dim">Click a tile to place. Hold Shift to place several. Right-click or Esc to cancel.</p>`;el.innerHTML=h;return}
+  const sel=S.sel;
+  if(!sel){
+    h=`<h3 style="margin-top:0">${P.name}</h3><div class="kv"><span>Cities</span><span>${kCities(0).length}</span><span>Soldiers</span><span>${armiesOf(0).reduce((s,a)=>s+armySize(a),0)} companies</span><span>Jobs</span><span>${P.jobs} for ${Math.floor(P.pop-P.soldiers)} free people</span><span>Discoveries</span><span>${P.techs.size}</span></div>
+    <p class="dim">Click a tile, city or army to inspect it. Pick a building from the bar below to start construction.</p>`;
+    if(P.workRatio<.8)h+=`<p>Not enough workers. Build houses so your population can grow.</p>`;
+    if(P.rate.food<0)h+=`<p style="color:#ff8b80">Your people are going hungry. Build farms.</p>`;
+    el.innerHTML=h;return;
+  }
+  if(sel.kind==='tile'){
+    const i=idx(sel.x,sel.y);
+    if(!S.explored[i]){el.innerHTML='<h3 style="margin-top:0">Unexplored</h3><p class="dim">Send a scout or an army to see what\'s here.</p>';return}
+    const o=S.owner[i],b=S.bld[i];
+    h=`<h3 style="margin-top:0">${TER[S.ter[i]].n}</h3><div class="kv"><span>Owner</span><span>${o<0?'Unclaimed':`<i class="sw" style="background:${rgb(S.kingdoms[o].color)}"></i>${dispName(S.kingdoms[o])}`}</span>${S.dep[i]?`<span>Resource</span><span>${DEP_N[S.dep[i]]}</span>`:''}${b?`<span>Building</span><span>${BLD[b.type].n}</span>`:''}</div>`;
+    if(b&&o===0)h+=`<div class="acts"><button id="demolish" class="danger">Demolish</button></div>`;
+    if(o===0&&!b){const ok=BLD_ORDER.filter(t=>!canBuild(P,t,sel.x,sel.y));if(ok.length)h+=`<p class="dim">You can build: ${ok.map(t=>BLD[t].n.toLowerCase()).join(', ')}.</p>`}
+    el.innerHTML=h;const d=$('#demolish');if(d)d.onclick=()=>{S.bld[i]=null;econRecalc(P);refreshUI()};return;
+  }
+  if(sel.kind==='city'){
+    const c=cityById(sel.id);if(!c){S.sel=null;return renderSide()}
+    const K=S.kingdoms[c.owner],mine=c.owner===0;
+    const gar=S.armies.filter(a=>a.owner===c.owner&&Math.hypot(a.x-c.x-.5,a.y-c.y-.5)<.8).reduce((s,a)=>s+armySize(a),0);
+    h=`<h3 style="margin-top:0">${c.name}${c.capital?' ★':''}</h3><div class="kv"><span>Realm</span><span><i class="sw" style="background:${rgb(K.color)}"></i>${dispName(K)}</span><span>Rank</span><span>${['','Village','Town','Castle'][c.level]}${c.walls?', walled':''}</span><span>Garrison</span><span>${mine||S.visible[idx(c.x,c.y)]?gar+' companies, plus militia':'Unknown'}</span><span>Defense</span><span>${mine||S.visible[idx(c.x,c.y)]?Math.round(cityDefense(c)):'?'}</span></div>`;
+    if(mine){
+      h+=`<h3>Improve</h3><div class="acts">`;
+      if(c.level===1)h+=`<button data-up="town">Raise to town<br><span class="cost">${costHTML(P,{wood:80,stone:60,gold:40})}</span></button>`;
+      if(c.level===2)h+=`<button data-up="castle" ${P.techs.has('fort')?'':'disabled'}>Raise to castle<br><span class="cost">${P.techs.has('fort')?costHTML(P,{stone:180,iron:30,gold:100}):'Needs Fortification'}</span></button>`;
+      if(!c.walls)h+=`<button data-up="walls" ${P.techs.has('masonry')?'':'disabled'}>Build walls<br><span class="cost">${P.techs.has('masonry')?costHTML(P,{stone:80,wood:30}):'Needs Masonry'}</span></button>`;
+      h+=`</div><h3>Train</h3>${P.bc.barracks?'':'<p class="dim">Build a barracks to train soldiers. Scouts don\'t need one.</p>'}<div class="acts">`;
+      for(const t of['inf','arch','cav','siege','scout']){const u=UNITS[t],lock=u.tech&&!P.techs.has(u.tech);
+        h+=`<button data-train="${t}" ${lock||(t!=='scout'&&!P.bc.barracks)?'disabled':''} title="${t==='scout'?'Explores on its own':'One company of 12, uses 5 population'}">${u.n}<br><span class="cost">${lock?'Needs '+TECHS[u.tech].n:costHTML(P,u.cost)}</span></button>`}
+      h+=`</div><p class="dim">Infantry beat cavalry, cavalry beat archers and siege, archers beat infantry. Siege engines break walls.</p>`;
+    }else if(atWar(0,c.owner))h+=`<p>You're at war with ${K.name}. Select one of your armies and right-click this city to attack it.</p>`;
+    el.innerHTML=h;
+    el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{
+      const u=b.dataset.up;
+      if(u==='town'){if(!canPay(P,{wood:80,stone:60,gold:40}))return toast('Not enough resources');pay(P,{wood:80,stone:60,gold:40});upgradeCity(c)}
+      if(u==='castle'){if(!canPay(P,{stone:180,iron:30,gold:100}))return toast('Not enough resources');pay(P,{stone:180,iron:30,gold:100});upgradeCity(c)}
+      if(u==='walls'){if(!canPay(P,{stone:80,wood:30}))return toast('Not enough resources');pay(P,{stone:80,wood:30});c.walls=true}
+      econRecalc(P);refreshUI()});
+    el.querySelectorAll('[data-train]').forEach(b=>b.onclick=()=>{const err=trainUnit(P,c,b.dataset.train);if(err)toast(err);refreshUI()});
+    return;
+  }
+  if(sel.kind==='army'){
+    const a=S.armies.find(x=>x.id===sel.id);if(!a){S.sel=null;return renderSide()}
+    const K=S.kingdoms[a.owner],mine=a.owner===0;
+    h=`<h3 style="margin-top:0">${mine?'Your army':K.name+' army'}</h3><div class="kv">`;
+    for(const k of[...UNIT_KEYS,'scout'])if(a.units[k])h+=`<span>${UNITS[k].n}</span><span>${a.units[k]}</span>`;
+    h+=`<span>Strength</span><span>${Math.round(unitsStr(a.units,K))}</span><span>Status</span><span>${a.explore?'Exploring':a.path.length?'Marching':'Holding'}</span></div>`;
+    if(mine){
+      h+=`<p class="dim">Right-click a tile to march there. Right-click an enemy city to besiege it.</p><div class="acts">`;
+      if(a.path.length||a.explore)h+=`<button id="aStop">Halt</button>`;
+      if(a.units.scout&&!armySize(a))h+=`<button id="aExplore">${a.explore?'Stop exploring':'Explore'}</button>`;
+      if(armySize(a)>1)h+=`<button id="aSplit">Split in half</button>`;
+      h+=`<button id="aDisband" class="danger">Disband</button></div>`;
+    }else h+=`<p class="dim">Relations: ${relWord(S.rel[0][a.owner])}${atWar(0,a.owner)?', at war':''}.</p>`;
+    el.innerHTML=h;
+    const on=(id,f)=>{const b=$('#'+id);if(b)b.onclick=()=>{f();refreshUI()}};
+    on('aStop',()=>{a.path=[];a.explore=false});
+    on('aExplore',()=>{a.explore=!a.explore;if(!a.explore)a.path=[]});
+    on('aSplit',()=>{const u={};for(const k of UNIT_KEYS){u[k]=Math.floor(a.units[k]/2);a.units[k]-=u[k]}const b=newArmy(0,Math.floor(a.x),Math.floor(a.y),u);b.x=a.x+.25;b.y=a.y;S.sel={kind:'army',id:b.id}});
+    on('aDisband',()=>{a.dead=true;S.armies=S.armies.filter(x=>!x.dead);S.sel=null;econRecalc(P)});
+  }
+}
+const armiesOf=o=>S.armies.filter(a=>a.owner===o);
+const relWord=r=>r>=60?'devoted':r>=30?'friendly':r>=5?'cordial':r>-15?'wary':r>-45?'hostile':'hateful';
+function renderChron(){
+  if(!S)return;const P=S.kingdoms[0];
+  $('#chronList').innerHTML=S.log.slice(0,40).map((e,i)=>{
+    const known=e.ids.some(id=>P.met.has(id));
+    const text=known?e.text:'Travellers speak of turmoil in distant lands.';
+    const col=e.ids.length?S.kingdoms[e.ids[0]].color:[200,200,200];
+    return`<div class="ev" data-i="${i}"><span class="yr">${yearOf(e.t)}</span><i class="sw" style="background:${known?rgb(col):'#555'}"></i>${text}</div>`}).join('');
+}
+$('#chronList').addEventListener('click',e=>{const d=e.target.closest('.ev');if(!d)return;const ev=S.log[+d.dataset.i];if(ev&&ev.at&&S.explored[idx(ev.at.x,ev.at.y)]){S.cam.x=ev.at.x+.5;S.cam.y=ev.at.y+.5}});
+function refreshUI(){renderTop();renderBar();renderSide()}
+function toast(t){const d=document.createElement('div');d.textContent=t;$('#toast').appendChild(d);setTimeout(()=>d.remove(),3200);while($('#toast').children.length>4)$('#toast').firstChild.remove()}
+
+// ---------- modals
+function showModal(html){$('#modalCard').innerHTML=html;$('#modal').classList.add('on');$('#modalCard').querySelectorAll('[data-close]').forEach(b=>b.onclick=hideModal);const f=$('#modalCard button');if(f)f.focus()}
+function hideModal(){$('#modal').classList.remove('on')}
+function openBattlePrompt(b){
+  const A=S.kingdoms[b.attOwner],D=S.kingdoms[b.defOwner],aU=sumUnits(b.att),dU=sumUnits(b.def);
+  if(b.city){const m=militia(b.city);for(const k in m)dU[k]+=m[k]}
+  const desc=u=>UNIT_KEYS.filter(k=>u[k]).map(k=>`${u[k]} ${UNITS[k].n.toLowerCase()}`).join(', ')||'no soldiers';
+  const sA=unitsStr(aU,A),sD=unitsStr(dU,D)*(b.city?wallBonus(b.city):1);
+  const pIsA=b.attOwner===0,ratio=pIsA?sA/(sD+.01):sD/(sA+.01);
+  const odds=ratio>1.6?'strongly favour you':ratio>1.1?'favour you':ratio>.9?'are even':ratio>.6?'are against you':'are badly against you';
+  showModal(`<h2>${b.city?(pIsA?'Siege of ':'Attack on ')+b.city.name:'Battle near '+placeName(b.x,b.y)}</h2>
+    <p>${dispName(A)} ${b.city?'assaults':'engages'} ${dispName(D).replace('Your realm','your forces')}${b.city&&b.city.walls?' behind the city walls':''}. The odds ${odds}.</p>
+    <div class="kv"><span>Attackers</span><span>${desc(aU)}</span><span>Defenders</span><span>${desc(dU)}${b.city?' (including militia)':''}</span></div>
+    <div class="row"><button class="primary" id="fightBtn">Command the battle</button><button id="autoBtn">Auto-resolve</button></div>`);
+  $('#fightBtn').onclick=()=>{hideModal();startTactical(b)};
+  $('#autoBtn').onclick=()=>{hideModal();autoResolve(b);S.pending=null;refreshUI()};
+}
+function showProposal(p){
+  if(p.kind==='callToArms'){
+    const ally=S.kingdoms[p.ally],en=S.kingdoms[p.enemy];if(!ally.alive||!en.alive||!allied(0,p.ally)||atWar(0,p.enemy))return;
+    showModal(`<h2>A call to arms</h2><p>${en.name} has declared war on your ally ${ally.name}. They expect you to join them.</p><div class="row"><button class="primary" id="pYes">Join the war</button><button id="pNo">Stay out of it</button></div>`);
+    $('#pYes').onclick=()=>{hideModal();declareWar(0,p.enemy)};
+    $('#pNo').onclick=()=>{hideModal();addRel(0,p.ally,-30);toast(`${ally.name} won't forget this`)};return;
+  }
+  const K=S.kingdoms[p.from];if(!K.alive)return;
+  const txt={peace:`${K.name} sends envoys asking for peace.`,alliance:`${K.name} proposes an alliance. Allies are expected to join each other's wars.`,trade:`${K.name} proposes a trade route between your markets.`}[p.kind];
+  if(p.kind==='peace'&&!atWar(0,K.id)||p.kind==='alliance'&&(atWar(0,K.id)||allied(0,K.id))||p.kind==='trade'&&(K.trade.has(0)||atWar(0,K.id)))return;
+  showModal(`<h2>Envoys from ${K.name}</h2><p>${txt}</p><div class="row"><button class="primary" id="pYes">Accept</button><button id="pNo">Refuse</button></div>`);
+  $('#pYes').onclick=()=>{hideModal();if(p.kind==='peace')makePeace(K.id,0);if(p.kind==='alliance')makeAlliance(K.id,0);if(p.kind==='trade'){K.trade.add(0);S.kingdoms[0].trade.add(K.id);log(`You open a trade route with ${K.name}.`,[0,K.id])}econRecalc(S.kingdoms[0]);refreshUI()};
+  $('#pNo').onclick=()=>{hideModal();addRel(0,K.id,-6)};
+}
+// ---------- research
+function openTech(){refreshTech(true)}
+function refreshTech(open){
+  if(!S)return;const ov=$('#techOv');if(!open&&!ov.classList.contains('on'))return;
+  const P=S.kingdoms[0],av=availableTechs(P);
+  let h=`<div class="row between"><h2>Research</h2><button data-x>Close</button></div><p class="dim">${P.rate.rp.toFixed(1)} research per day. Libraries add more. Starting a project costs gold.</p><div class="tree">`;
+  BRANCHES.forEach((bn,bi)=>{
+    h+=`<div class="br"><h3>${bn}</h3>`;
+    for(const[id,t]of Object.entries(TECHS)){if(t.br!==bi)continue;
+      const done=P.techs.has(id),cur=P.research&&P.research.id===id,can=av.includes(id)&&!P.research;
+      h+=`<div class="tech ${done?'done':''} ${cur?'cur':''}"><b>${t.n}</b>${t.d}${t.era&&P.era<t.era?`<div class="dim">Requires the age of ${['','','Expansion','Empire'][t.era]}</div>`:''}
+        ${cur?`<div class="prog"><i style="width:${P.research.p/t.cost*100}%"></i></div>`:''}
+        ${!done&&!cur?`<div><button data-r="${id}" ${can&&P.res.gold>=techGold(id)?'':'disabled'}>Research: ${t.cost} pts, ${techGold(id)} gold</button></div>`:''}</div>`}
+    h+=`</div>`;
+  });
+  const e=TECHS.enlight,cur=P.research&&P.research.id==='enlight';
+  h+=`</div><div class="tech ${P.techs.has('enlight')?'done':''} ${cur?'cur':''}"><b>${e.n}</b>Needs every other discovery and the age of Empire. Researching it wins the game.${cur?`<div class="prog"><i style="width:${P.research.p/e.cost*100}%"></i></div>`:''}
+    ${!P.techs.has('enlight')&&!cur?`<div><button data-r="enlight" ${av.includes('enlight')&&!P.research&&P.res.gold>=techGold('enlight')?'':'disabled'}>Research: ${e.cost} pts, ${techGold('enlight')} gold</button></div>`:''}</div>`;
+  $('#techCard').innerHTML=h;ov.classList.add('on');
+}
+$('#techCard').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.x!==undefined){$('#techOv').classList.remove('on');return}
+  if(b.dataset.r){startResearch(S.kingdoms[0],b.dataset.r);refreshTech(true);renderTop()}});
+// ---------- diplomacy
+function strWord(r){return r>2?'far stronger than you':r>1.3?'stronger than you':r>.75?'about as strong as you':r>.4?'weaker than you':'far weaker than you'}
+function openDip(){
+  const P=S.kingdoms[0];let h=`<div class="row between"><h2>Realms</h2><button data-x>Close</button></div>`;
+  const known=S.kingdoms.filter(k=>!k.isPlayer&&P.met.has(k.id));
+  if(!known.length)h+=`<p>You haven't met any other realm yet. Train a scout in your capital and send it exploring.</p>`;
+  for(const K of known){
+    const r=S.rel[0][K.id],st=S.st[0][K.id];
+    if(!K.alive){h+=`<div class="realm"><b><i class="sw" style="background:${rgb(K.color)}"></i>${K.name}</b> <span class="dim">has fallen</span></div>`;continue}
+    const wars=S.kingdoms.filter(o=>o.alive&&o!==K&&atWar(K.id,o.id)&&P.met.has(o.id)).map(o=>dispName(o).replace('Your realm','you'));
+    const allies=S.kingdoms.filter(o=>o.alive&&o!==K&&allied(K.id,o.id)&&P.met.has(o.id)).map(o=>dispName(o).replace('Your realm','you'));
+    h+=`<div class="realm"><b style="font-family:var(--serif);font-size:18px"><i class="sw" style="background:${rgb(K.color)}"></i>${K.name}</b>${st===1?'<span class="tag war">At war</span>':st===2?'<span class="tag ally">Allied</span>':''}${K.trade.has(0)?'<span class="tag">Trading</span>':''}
+      <div class="dim">${K.pers.name} realm, ${kCities(K.id).length} cities, ${strWord(K.str/(P.str+1))}. ${wars.length?'At war with '+wars.join(', ')+'.':''} ${allies.length?'Allied with '+allies.join(', ')+'.':''}</div>
+      <div class="relbar"><i style="${r>=0?`left:50%;width:${r/2}%;background:var(--ok)`:`left:${50+r/2}%;width:${-r/2}%;background:var(--blood)`}"></i></div>
+      <div class="dim" style="margin-top:-4px">They feel ${relWord(r)} toward you.</div><div class="acts">`;
+    if(st===1)h+=`<button data-d="peace" data-k="${K.id}">Propose peace</button>`;
+    else{h+=`<button data-d="war" data-k="${K.id}" class="danger">Declare war</button>`;
+      if(st===2)h+=`<button data-d="break" data-k="${K.id}">End alliance</button>`;else h+=`<button data-d="alliance" data-k="${K.id}">Propose alliance</button>`;
+      if(!K.trade.has(0))h+=`<button data-d="trade" data-k="${K.id}" ${P.techs.has('trade')&&hasMarket(P)?'':'disabled'} title="Needs Trade routes and a market in both realms">Open trade route</button>`;
+      h+=`<button data-d="gift" data-k="${K.id}" ${P.res.gold>=100?'':'disabled'}>Gift 100 gold</button>`;
+      for(const rs of['wood','stone','iron','food'])h+=`<button data-d="buy" data-r="${rs}" data-k="${K.id}" title="They have ${fmt(K.res[rs])}">Buy 50 ${rs}: ${buyPrice(rs)}g</button>`;
+      h+=`<button data-d="sell" data-k="${K.id}" title="Sell your largest stockpile">Sell 50 of your ${largestRes(P)}: ${sellPrice(largestRes(P))}g</button>`;}
+    h+=`</div></div>`;
+  }
+  $('#dipCard').innerHTML=h;$('#dipOv').classList.add('on');
+}
+const VAL={food:1,wood:1,stone:1.5,iron:3};
+const buyPrice=r=>Math.round(50*VAL[r]*1.3),sellPrice=r=>Math.round(50*VAL[r]*.7);
+function largestRes(P){return['food','wood','stone','iron'].reduce((a,b)=>P.res[b]>P.res[a]?b:a,'wood')}
+$('#dipCard').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;if(b.dataset.x!==undefined){$('#dipOv').classList.remove('on');return}
+  const P=S.kingdoms[0],K=S.kingdoms[+b.dataset.k],d=b.dataset.d;
+  if(d==='war'){declareWar(0,K.id);for(const C of S.kingdoms)if(C.alive&&C.id!==0&&allied(C.id,0)&&!allied(C.id,K.id)&&S.rel[C.id][0]>40&&Math.random()<.6){setStatus(C.id,K.id,1);log(`${C.name} joins your war against ${K.name}.`,[C.id,K.id])}}
+  if(d==='peace'){if(aiAccepts(K,'peace',0)){makePeace(0,K.id);toast(`${K.name} accepts peace`)}else toast(`${K.name} refuses. They think they can win.`)}
+  if(d==='alliance'){if(aiAccepts(K,'alliance',0)){makeAlliance(0,K.id);toast(`${K.name} is now your ally`)}else toast(`${K.name} isn't ready to ally with you`)}
+  if(d==='break'){setStatus(0,K.id,0);addRel(0,K.id,-25);log(`You end your alliance with ${K.name}.`,[0,K.id])}
+  if(d==='trade'){if(aiAccepts(K,'trade',0)){K.trade.add(0);P.trade.add(K.id);log(`You open a trade route with ${K.name}.`,[0,K.id]);econRecalc(P)}else toast(`${K.name} declines. ${hasMarket(K)?'They don\'t trust you enough.':'They have no market.'}`)}
+  if(d==='gift'){P.res.gold-=100;K.res.gold+=100;addRel(0,K.id,8);toast(`${K.name} appreciates the gift`)}
+  if(d==='buy'){const r=b.dataset.r,p=buyPrice(r);if(atWar(0,K.id))return;if(K.res[r]<80)return toast(`${K.name} can't spare any ${r}`);if(P.res.gold<p)return toast('Not enough gold');P.res.gold-=p;K.res.gold+=p;K.res[r]-=50;P.res[r]+=50;addRel(0,K.id,1)}
+  if(d==='sell'){const r=largestRes(P),p=sellPrice(r);if(P.res[r]<50)return toast(`You don't have 50 ${r}`);if(K.res.gold<p)return toast(`${K.name} can't afford it`);P.res[r]-=50;K.res[r]+=50;P.res.gold+=p;K.res.gold-=p;addRel(0,K.id,1)}
+  openDip();renderTop();
+});
+function openVic(){
+  const v=victoryState();
+  const row=(n,o,d)=>`<div><b style="font-family:var(--serif);font-size:18px">${n}</b> <span class="dim">${d}</span><div>${o.label}</div><div class="meter"><i style="width:${clamp(o.p,0,1)*100}%"></i></div></div>`;
+  $('#vicCard').innerHTML=`<div class="row between"><h2>Paths to victory</h2><button data-x>Close</button></div><p class="dim">Any rival that holds 60% of the cities or reaches the Enlightenment first wins instead.</p><div class="vic">
+    ${row('Conquest',v.conquest,'Hold 60% of all cities')}${row('Economy',v.economy,'Hold 25,000 gold')}${row('Diplomacy',v.diplomacy,'Stay allied with every surviving realm for a year')}${row('Knowledge',v.knowledge,'Research the Enlightenment')}</div>`;
+  $('#vicOv').classList.add('on');
+}
+$('#vicCard').addEventListener('click',e=>{if(e.target.closest('[data-x]'))$('#vicOv').classList.remove('on')});
+for(const id of['techOv','dipOv','vicOv'])$('#'+id).addEventListener('click',e=>{if(e.target.id===id)$('#'+id).classList.remove('on')});
+$('#bbar').addEventListener('click',e=>{const b=e.target.closest('button');if(b)battleCmd(b.dataset.b)});
+
+// ====================================================== flow
+function showTitle(){S=null;for(const id of['top','side','chron','bar','bhead','bbar'])$('#'+id).classList.add('hide');$('#title').classList.add('on')}
+function start(){
+  const seed=seedFrom($('#seedIn').value.trim()),rivals=+$('#rivalsIn').value;
+  newGame(seed,rivals);
+  $('#title').classList.remove('on');
+  for(const id of['top','side','chron','bar'])$('#'+id).classList.remove('hide');
+  refreshUI();renderChron();
+  showModal(`<h2>Your first season</h2><p>Your capital is the starred city. The land inside your border is yours to build on.</p>
+  <p>Start by building farms on plains and lumber camps in forests, then houses so your population can grow into the jobs. A library speeds up research, and a barracks lets you train soldiers. Train a scout from your capital to find the other realms.</p>
+  <p class="dim">The other realms are already making plans. Watch the chronicle in the corner.</p><div class="row"><button class="primary" data-close>Begin</button></div>`);
+}
+$('#startBtn').onclick=start;
+let last=performance.now(),uiT=0;
 function frame(now){
-  const dt=Math.min(.05,(now-last)/1000);last=now;
-  if(playing())update(dt);
-  render();
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(S){
+    if(S.battle){updateBattle(dt);renderBattle()}
+    else{
+      const panning=!anyModal();
+      if(panning){const sp=600/S.cam.z*dt;if(keys.w||keys.arrowup)S.cam.y-=sp;if(keys.s||keys.arrowdown)S.cam.y+=sp;if(keys.a||keys.arrowleft)S.cam.x-=sp;if(keys.d||keys.arrowright)S.cam.x+=sp}
+      S.cam.x=clamp(S.cam.x,0,MW);S.cam.y=clamp(S.cam.y,0,MH);
+      if(!S.paused&&!S.over&&!S.pending&&!anyModal()){
+        const steps=S.speed;for(let k=0;k<steps;k++)updateWorld(dt);
+      }
+      renderMap();
+      uiT-=dt;if(uiT<=0){uiT=.25;if(!$('#top').matches(':hover'))renderTop();if(!S.tool&&!$('#side').matches(':hover'))renderSide();if(!$('#techCard').matches(':hover'))refreshTech(false)}
+    }
+  }else{ctx.fillStyle='#0b120e';ctx.fillRect(0,0,VW,VH)}
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
