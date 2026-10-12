@@ -11,8 +11,9 @@ You rule a small medieval settlement on a procedurally generated continent. Grow
 - **Expansion.** Found new cities to claim land. Scouts explore the wilderness and make contact with other realms.
 - **Diplomacy.** Alliances, peace, trade routes, gifts, and buying or selling resources. Allies expect you to join their wars.
 - **Battles.** Command battles in real time or auto-resolve them. Infantry beat cavalry, cavalry beat archers and siege, archers beat infantry, and siege engines break walls. Formations: line, wedge and block.
+- **The map.** Hand-shaded terrain with coastlines, forests and mountains, soft fog of war, a minimap, hover details, and warnings when enemy armies march on your cities.
 - **Research.** Four branches (agriculture, construction, military, economics) across three ages: Settlement, Expansion and Empire.
-- **Victory.** Conquest (60% of cities), economy (25,000 gold), diplomacy (a year allied with every surviving realm) or knowledge (the Enlightenment). A rival can win the same way.
+- **Victory.** Conquer every rival realm. A realm falls when it loses its last city, and you lose if yours does. The Standings panel tracks who holds what.
 
 ## Controls
 
@@ -22,8 +23,11 @@ You rule a small medieval settlement on a procedurally generated continent. Grow
 | Scroll | Zoom |
 | Click | Select a tile, city or army |
 | Right-click | Move the selected army, or attack an enemy city |
+| Tab | Cycle through your armies |
+| Shift-click Train | Train five companies |
+| Minimap | Click or drag to jump |
 | Space | Pause |
-| T / G / V | Research, realms, victory progress |
+| T / G / V | Research, diplomacy, standings |
 | In battle: drag | Select companies |
 | In battle: right-click | Move or attack |
 | In battle: Q, C, H | Select all, charge, hold |
